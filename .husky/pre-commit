@@ -1,1 +1,1 @@
-npm lint-prettier
+npm run lint-prettier

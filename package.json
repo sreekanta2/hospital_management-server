@@ -11,6 +11,12 @@
     "lint-prettier": "yarn lint-check && yarn format",
     "prepare": "husky"
   },
+  "lint-staged": {
+    "*.ts": [
+      "eslint",
+      "prettier --write"
+    ]
+  },
   "author": "srikanto",
   "license": "ISC",
   "dependencies": {
@@ -30,6 +36,7 @@
     "@typescript-eslint/parser": "^6.20.0",
     "eslint": "^8.56.0",
     "husky": "^9.0.10",
+    "lint-staged": "^15.2.1",
     "prettier": "^3.2.5",
     "typescript": "^5.3.3"
   }

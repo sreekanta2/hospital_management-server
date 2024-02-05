@@ -1,0 +1,16 @@
+{
+  "editor.wordWrap": "on",
+  "editor.fontSize": 16,
+  "editor.formatOnType": true,
+  "diffEditor.ignoreTrimWhitespace": false,
+  "workbench.editor.enablePreview": false,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+
+  "eslint.enable": true,
+  "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit",
+    "source.organizeImports": "explicit"
+  },
+  "editor.guides.bracketPairs": true
+}

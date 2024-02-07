@@ -1,7 +1,10 @@
 /* eslint-disable no-undefined */
 import { ErrorRequestHandler } from "express";
+import { ZodError } from "zod";
 import { IGenericErrors } from "../../interfaces/error";
 import ApiError from "../../utils/ApiError";
+
+import { handleZodSimplifiedError } from "../../utils/handleZodSimplifiedError";
 import { handleValidationError } from "../../utils/modifeMongooseValidationError";
 
 export const globalErrorHandler: ErrorRequestHandler = (
@@ -29,6 +32,11 @@ export const globalErrorHandler: ErrorRequestHandler = (
           },
         ]
       : [];
+  } else if (error instanceof ZodError) {
+    const simplifiedError = handleZodSimplifiedError(error);
+    statusCode = simplifiedError?.statusCode;
+    message = simplifiedError?.message;
+    errorMessages = simplifiedError?.errorMessages;
   } else if (error instanceof Error) {
     message = error?.message;
     errorMessages = error?.message

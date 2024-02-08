@@ -9,16 +9,13 @@ const userSchema = new Schema<IUser, UserModel>(
     id: {
       type: String,
       required: true,
-      unique: true,
     },
     role: {
       type: String,
-      required: true,
     },
     password: {
       type: String,
       required: true,
-      select: 0,
     },
     email: {
       type: String,
@@ -27,6 +24,14 @@ const userSchema = new Schema<IUser, UserModel>(
     },
     refreshToken: {
       type: String,
+    },
+    doctor: {
+      type: Schema.Types.ObjectId,
+      ref: "Doctor",
+    },
+    patient: {
+      type: Schema.Types.ObjectId,
+      ref: "patient",
     },
   },
   {
@@ -42,14 +47,21 @@ userSchema.pre("save", async function (next) {
   this.password = await bcrypt.hash(this.password, 10);
 });
 
-userSchema.statics.isUserExit = async function (email: string) {
-  return await User.findOne({ email }, { id: 1, email: 1, password: 1 });
+userSchema.statics.isUserExit = async function (id, email) {
+  const result = await User.findOne({
+    $or: [
+      {
+        email,
+      },
+      {
+        id,
+      },
+    ],
+  });
+  return result;
 };
-userSchema.statics.checkPassword = async function (
-  givenPassword: string,
-  savedPassword: string
-) {
-  return bcrypt.compare(givenPassword, savedPassword);
+userSchema.methods.checkPassword = async function (givenPassword: string) {
+  return bcrypt.compare(givenPassword, this.password);
 };
 userSchema.methods.generateAccessToken = async function () {
   return jwt.sign(

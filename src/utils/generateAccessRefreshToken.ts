@@ -2,8 +2,10 @@ import httpStatus from "http-status";
 import { User } from "../app/modules/user/user.model";
 import ApiError from "./ApiError";
 
-export const accessTokenAndRefreshTokenGenerate = async (userId: string) => {
-  const user = await User.findOne({ id: userId });
+export const accessTokenAndRefreshTokenGenerate = async (payload: string) => {
+  const user = await User.findOne({
+    $or: [{ id: payload }, { email: payload }],
+  });
   if (!user) {
     throw new ApiError(httpStatus.NOT_FOUND, "user doesn't exit!!");
   }

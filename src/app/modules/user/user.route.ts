@@ -1,22 +1,20 @@
 import express from "express";
 
-import { verifyJwt } from "../../middlewares/auth.middleware";
 import { zodRequestValidationHandler } from "../../middlewares/zod.middleware";
 import { UserController } from "./user.controller";
 import { UserZodValidation } from "./user.zodValidation";
-const route = express.Router();
-route
-  .route("/create-doctor")
+const router = express.Router();
+router
+  .route("/doctor-register")
   .post(
     zodRequestValidationHandler(UserZodValidation.createUserZodSchema),
-    UserController.createDoctor
+    UserController.registerDoctor
   );
-route
-  .route("/login")
+router
+  .route("/patient-register")
   .post(
-    zodRequestValidationHandler(UserZodValidation.loginUserZodSchema),
-    UserController.login
+    zodRequestValidationHandler(UserZodValidation.createUserZodSchema),
+    UserController.registerPatient
   );
-route.route("/logout").post(verifyJwt, UserController.logoutUser);
-// route.post("/create-patient", UserController.createPatient);
-export const UserRoutes = route;
+
+export const UserRoutes = router;

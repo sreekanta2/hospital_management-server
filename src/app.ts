@@ -1,6 +1,6 @@
 import cookieParser from "cookie-parser";
 import cors from "cors";
-import express, { Application, NextFunction, Request, Response } from "express";
+import express, { Application } from "express";
 import { globalErrorHandler } from "./app/middlewares/globalErrorHandler";
 import router from "./app/routes";
 
@@ -19,11 +19,11 @@ app.use(cookieParser());
 
 app.use("/api/v1/", router);
 
-app.get("/", (req: Request, res: Response, next: NextFunction) => {
-  // throw new ApiError();
-  // res.send({ error });
-  // res.send("hello world");
-});
+// app.get("/", (req: Request, res: Response, next: NextFunction) => {
+//   // throw new ApiError();
+//   // res.send({ error });
+//   // res.send("hello world");
+// });
 
 app.use(globalErrorHandler);
 

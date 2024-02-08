@@ -1,75 +1,101 @@
 import httpStatus from "http-status";
-import { JwtPayload } from "jsonwebtoken";
 import ApiError from "../../../utils/ApiError";
-import { accessTokenAndRefreshTokenGenerate } from "../../../utils/generateAccessRefreshToken";
 import { IUser } from "./user.interface";
 import { User } from "./user.model";
-import { generateDoctorId } from "./user.utils";
+import { generateDoctorId, generatePatientId } from "./user.utils";
 
-const createDoctor = async (user: IUser) => {
-  const id = await generateDoctorId();
-  user.id = id;
-  const { email, password, role } = user;
+import mongoose from "mongoose";
+import { Doctor } from "../doctor/doctor.model";
+import { Patient } from "../patient/patient.model";
 
-  if ([id, email, password, role].some((field) => field?.trim() === "")) {
-    throw new ApiError(httpStatus.FORBIDDEN, "All fields are required");
-  }
-
-  const doctor = await User.create(user);
-  const createDoctor = await User.findOne({ id: doctor.id }).select(
-    "-password -refreshToken"
-  );
-  if (!createDoctor) {
-    throw new ApiError(httpStatus.BAD_REQUEST, "Something went wrong!");
-  }
-  return createDoctor;
-};
-
-const login = async (payload: { email: string; password: string }) => {
-  // req body -> data
-  // username or email
-  //find the user
-  //password check
-  //access and refresh token
-  //send cookie
-
-  const { email, password } = payload;
-
-  const user = await User.isUserExit(email);
-  if (!user) {
-    throw new ApiError(httpStatus.NOT_FOUND, "User doesn't exit!!");
-  }
-  const isMatched = await User.checkPassword(password, user.password);
-  if (!isMatched) {
-    throw new ApiError(httpStatus.BAD_REQUEST, "Password incorrect");
-  }
-
-  const { accessToken, refreshToken } =
-    await accessTokenAndRefreshTokenGenerate(user.id);
-
-  return { accessToken, refreshToken };
-};
-const logoutUser = async (payload: JwtPayload) => {
+const registerDoctor = async (user: IUser): Promise<Partial<IUser> | null> => {
+  let newUserAllData = null;
+  const session = await mongoose.startSession();
   try {
-    const result = await User.findOneAndUpdate(
-      payload,
+    session.startTransaction();
+    const id = await generateDoctorId();
+    user.id = id;
+    user.role = "doctor";
+
+    const newDoctor = await Doctor.create(
+      [{ email: user.email, id: user.id }],
       {
-        $set: {
-          refreshToken: "",
-        },
-      },
-      {
-        new: true,
+        session,
       }
     );
-    return result;
+
+    if (!newDoctor.length) {
+      throw new ApiError(httpStatus.BAD_REQUEST, "Failed to create doctor");
+    }
+
+    user.doctor = newDoctor[0]._id;
+
+    const newUser = await User.create([user], { session });
+
+    if (!newUser.length) {
+      throw new ApiError(httpStatus.BAD_REQUEST, "Failed to create user");
+    }
+    newUserAllData = newUser[0];
+
+    await session.commitTransaction();
+    await session.endSession();
   } catch (error) {
-    throw new ApiError(httpStatus.UNAUTHORIZED, "some thing went wrong!");
+    await session.abortTransaction();
+    await session.endSession();
+    throw error;
   }
+  if (newUserAllData) {
+    newUserAllData = await User.findOne({ id: newUserAllData.id }).populate({
+      path: "doctor",
+    });
+  }
+  return newUserAllData;
+};
+const registerPatient = async (user: IUser): Promise<Partial<IUser> | null> => {
+  let newUserAllData = null;
+  const session = await mongoose.startSession();
+  try {
+    session.startTransaction();
+    const id = await generatePatientId();
+    user.id = id;
+    user.role = "patient";
+
+    const newPatient = await Patient.create(
+      [{ email: user.email, id: user.id }],
+      {
+        session,
+      }
+    );
+
+    if (!newPatient.length) {
+      throw new ApiError(httpStatus.BAD_REQUEST, "Failed to create patient");
+    }
+
+    user.patient = newPatient[0]._id;
+
+    const newUser = await User.create([user], { session });
+
+    if (!newUser.length) {
+      throw new ApiError(httpStatus.BAD_REQUEST, "Failed to create user");
+    }
+    newUserAllData = newUser[0];
+
+    await session.commitTransaction();
+    await session.endSession();
+  } catch (error) {
+    await session.abortTransaction();
+    await session.endSession();
+    throw error;
+  }
+  if (newUserAllData) {
+    newUserAllData = await User.findOne({ id: newUserAllData.id }).populate({
+      path: "patient",
+    });
+  }
+  return newUserAllData;
 };
 
 export const UserService = {
-  createDoctor,
-  login,
-  logoutUser,
+  registerDoctor,
+  registerPatient,
 };

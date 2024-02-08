@@ -13,7 +13,7 @@ const verifyJwt = async (req: Request, res: Response, next: NextFunction) => {
     if (!token) {
       throw new ApiError(
         httpStatus.UNAUTHORIZED,
-        "invalid token & user nort login"
+        "invalid token & user already logout please  login !!"
       );
     }
 

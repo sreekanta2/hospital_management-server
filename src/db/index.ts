@@ -1,18 +1,18 @@
 import mongoose from "mongoose";
 import { DB_NAME } from "../constant";
+import { errorLogger, infoLogger } from "../shared/logger";
 
 const connectDB = async () => {
   try {
     const mongodbInstance = await mongoose.connect(
       `${process.env.MONGODB_URI}/${DB_NAME}`
     );
-    console.log(
+    infoLogger.info(
       `💕 MONGODB connected successfully `,
       mongodbInstance.connection.host
     );
   } catch (error) {
-    console.log(`  MONGODB connect field :`, error);
-    process.exit(1);
+    errorLogger.error(`  MONGODB connect field :`, error);
   }
 };
 export default connectDB;

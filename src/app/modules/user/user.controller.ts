@@ -29,5 +29,5 @@ const registerPatient: RequestHandler = asyncHandler(async (req, res) => {
 
 export const UserController = {
   registerDoctor,
-  registerPatient
+  registerPatient,
 };

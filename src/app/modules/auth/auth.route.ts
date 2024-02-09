@@ -19,5 +19,17 @@ router
     verifyJwt,
     AuthController.changePassword
   );
+router
+  .route("/forgat-password")
+  .post(
+    zodRequestValidationHandler(AuthValidation.forgatPasswordZodValidation),
+    AuthController.forgatPassword
+  );
+router
+  .route("/reset-password/:token")
+  .patch(
+    zodRequestValidationHandler(AuthValidation.resetPasswordZodValidation),
+    AuthController.resetPassword
+  );
 
 export const AuthRoutes = router;

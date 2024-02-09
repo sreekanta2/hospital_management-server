@@ -12,3 +12,6 @@ export interface IChangePassword {
   oldPassword: string;
   newPassword: string;
 }
+export interface IForgatPassword {
+  email: string;
+}

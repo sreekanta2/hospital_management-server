@@ -64,8 +64,37 @@ const changePassword = asyncHandler(async (req, res) => {
     data: result,
   });
 });
+
+const forgatPassword = asyncHandler(async (req, res) => {
+  const email = req.body;
+  const resetUrl = `${req.protocol}://${req.get("host")}/api/v1/auth/reset-password`;
+  const result = await AuthService.forgatPassword(resetUrl, email.email);
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Password change successfully",
+    data: result,
+  });
+});
+const resetPassword = asyncHandler(async (req, res) => {
+  const { password, confirmPassword } = req.body;
+  const token = req.params.token;
+  const result = await AuthService.resetPassword(
+    token,
+    password,
+    confirmPassword
+  );
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Password change successfully",
+    data: result,
+  });
+});
 export const AuthController = {
   login,
   logout,
   changePassword,
+  forgatPassword,
+  resetPassword,
 };

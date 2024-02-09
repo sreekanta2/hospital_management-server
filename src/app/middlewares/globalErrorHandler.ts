@@ -4,8 +4,11 @@ import { ZodError } from "zod";
 import { IGenericErrors } from "../../interfaces/error";
 import ApiError from "../../utils/ApiError";
 
+import {
+  handleCastError,
+  handleValidationError,
+} from "../../utils/errorModifer";
 import { handleZodSimplifiedError } from "../../utils/handleZodSimplifiedError";
-import { handleValidationError } from "../../utils/modifeMongooseValidationError";
 
 export const globalErrorHandler: ErrorRequestHandler = (
   error,
@@ -37,6 +40,11 @@ export const globalErrorHandler: ErrorRequestHandler = (
     statusCode = simplifiedError?.statusCode;
     message = simplifiedError?.message;
     errorMessages = simplifiedError?.errorMessages;
+  } else if (error.name === "CastError") {
+    const simplifiedError = handleCastError(error);
+    statusCode = simplifiedError.statusCode;
+    message = simplifiedError.message;
+    errorMessages = simplifiedError.errorMessages;
   } else if (error instanceof Error) {
     message = error?.message;
     errorMessages = error?.message

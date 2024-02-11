@@ -13,5 +13,5 @@
     "source.organizeImports": "explicit"
   },
   "editor.guides.bracketPairs": true,
-  "cSpell.words": ["faild", "invaild"]
+  "cSpell.words": ["faild", "invaild", "specialities"]
 }

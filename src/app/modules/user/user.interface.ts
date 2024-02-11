@@ -1,8 +1,8 @@
-import { Model, Types } from "mongoose";
+import { Model, ObjectId, Types } from "mongoose";
 
 export interface IUser {
-  id: string;
-  email: string | [];
+  id: ObjectId | string;
+  email: ObjectId;
   password: string;
   confirmPassword: string;
   refreshToken?: string;

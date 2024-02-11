@@ -54,9 +54,13 @@ interface GalleryImage {
 }
 
 export interface IDoctor {
-  user: string | ObjectId;
-  username: string;
-  email: string;
+  email: {
+    type: string;
+  };
+  id: {
+    type: ObjectId;
+  };
+
   firstName: string;
   lastName: string;
   rating: number;
@@ -64,7 +68,6 @@ export interface IDoctor {
   gender: string;
   dateOfBirth: string;
   profile_thumb: string;
-
   gallery: GalleryImage[];
   schedule: Schedule[];
   clinic: Clinic[];

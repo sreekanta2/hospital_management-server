@@ -1,4 +1,4 @@
-import mongoose, { Schema } from "mongoose";
+import mongoose from "mongoose";
 import { IUser } from "../user/user.interface";
 
 const scheduleSchema = new mongoose.Schema({
@@ -31,16 +31,19 @@ const contactSchema = new mongoose.Schema({
   postalCode: String,
 });
 
-export const doctorSchemaT = new mongoose.Schema(
+export const doctorSchema = new mongoose.Schema(
   {
-    user: {
-      type: Schema.Types.ObjectId,
-      ref: "User",
-    },
-    username: {
+    email: {
       type: String,
+      required: true,
       unique: true,
     },
+    id: {
+      type: String,
+      required: true,
+      unique: true,
+    },
+
     firstName: String,
     lastName: String,
     rating: Number,
@@ -98,20 +101,17 @@ export const doctorSchemaT = new mongoose.Schema(
     timestamps: true,
   }
 );
-const doctorSchema = new mongoose.Schema({
-  email: {
-    type: String,
-    required: true,
-    unique: true,
-  },
-  id: {
-    type: String,
-    required: true,
-    unique: true,
-  },
-});
+// const doctorSchema1 = new mongoose.Schema({
+//   email: {
+//     type: String,
+//     required: true,
+//     unique: true,
+//   },
+//   id: {
+//     type: String,
+//     required: true,
+//     unique: true,
+//   },
+// });
 
-export const Doctor = mongoose.model<Pick<IUser, "id" | "email">>(
-  "Doctor",
-  doctorSchema
-);
+export const Doctor = mongoose.model<Partial<IUser>>("Doctor", doctorSchema);

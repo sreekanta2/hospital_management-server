@@ -59,10 +59,6 @@ const GalleryImageSchema = z.object({
 
 const updateDoctorZodSchema = z.object({
   body: z.object({
-    user: z.string({
-      required_error: "user id is required",
-    }),
-    username: z.string(),
     firstName: z.string({
       required_error: "fistname is required",
     }),
@@ -81,7 +77,7 @@ const updateDoctorZodSchema = z.object({
     contact: z.array(ContactSchema),
     price: z.string(),
     service: z.array(z.string()),
-    Specializations: z.array(z.string()),
+    specializations: z.string(),
     education: z.array(EducationSchema),
     experience: z.array(ExperienceSchema),
     awards: z.array(AwardSchema),

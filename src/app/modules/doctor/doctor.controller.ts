@@ -41,8 +41,19 @@ const getSingleDoctor: RequestHandler = asyncHandler(async (req, res) => {
     data: doctor,
   });
 });
+const deleteDoctor: RequestHandler = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const doctor = await DoctorService.deleteDoctor(id);
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "  doctor delete  successfully",
+    data: doctor,
+  });
+});
 export const DoctorController = {
   getAllDoctor,
   updateDoctor,
   getSingleDoctor,
+  deleteDoctor,
 };

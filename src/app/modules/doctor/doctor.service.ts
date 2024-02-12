@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import httpStatus from "http-status";
-import { SortOrder } from "mongoose";
+import mongoose, { SortOrder } from "mongoose";
 import { searchableFields } from "../../../constant";
 import {
   IFilterableFields,
@@ -8,6 +8,7 @@ import {
 } from "../../../interfaces/common";
 import ApiError from "../../../utils/ApiError";
 import { paginationCalculator } from "../../../utils/paginationHelper";
+import { User } from "../user/user.model";
 import { IDoctor } from "./doctor.interface";
 import { Doctor } from "./doctor.model";
 const getAllDoctor = async (
@@ -17,7 +18,6 @@ const getAllDoctor = async (
   const { page, limit, skip, sortBy, sortOrder } =
     paginationCalculator(options);
   const { searchTerm, ...filterableData } = filter;
-  console.log(filterableData);
   const conditionalSorting: { [key: string]: SortOrder } = {};
   if (sortBy && sortOrder) {
     conditionalSorting[sortBy] = sortOrder;
@@ -83,13 +83,54 @@ const updateDoctor = async (id: string, payload: IDoctor) => {
   return doctor;
 };
 const getSingleDoctor = async (payload: string) => {
-  const doctor = await Doctor.findOne({
+  const doctor = await User.findOne({
     $or: [{ email: payload }, { id: payload }],
+  }).populate({
+    path: "doctor",
   });
   return doctor;
+};
+const deleteDoctor = async (id: string) => {
+  const session = await mongoose.startSession();
+  try {
+    // Start a transaction
+    session.startTransaction();
+
+    // Delete student using session
+    const doctor = await Doctor.deleteOne({ id }, { session });
+
+    // Check if the deletion was acknowledged
+    if (doctor.deletedCount === 0 && doctor.acknowledged) {
+      throw new Error("Failed to delete user");
+    }
+
+    // Delete user using session
+
+    const deleteUser = await User.deleteOne({ id }, { session });
+
+    // Check if the deletion was acknowledged
+    if (deleteUser.acknowledged && deleteUser.deletedCount === 0) {
+      throw new Error("Failed to delete user");
+    }
+
+    // Commit the transaction if both deletions are successful
+    await session.commitTransaction();
+    await session.endSession();
+
+    return {
+      doctor,
+      deleteUser,
+      success: true,
+    };
+  } catch (error) {
+    // If an error occurs during the transaction, catch it and abort the transaction
+    await session.abortTransaction();
+    throw new ApiError(httpStatus.BAD_REQUEST, "Doctor and user delete field");
+  }
 };
 export const DoctorService = {
   getAllDoctor,
   updateDoctor,
   getSingleDoctor,
+  deleteDoctor,
 };

@@ -74,7 +74,7 @@ export interface IDoctor {
   contact: Contact[];
   price: string;
   service: string[];
-  Specializations: string[];
+  specializations: "";
   education: Education[];
   experience: Experience[];
   awards: Award[];

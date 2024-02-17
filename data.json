@@ -75,4 +75,28 @@
   ],
   "awards": [{ "award": "Best Dentist Award", "year": "2017" }],
   "registrations": [{ "registration": "Dentist123", "year": "2015" }]
+},
+{
+  "patientId": "123456",
+   
+  "email": "john@example.com",
+  "firstName": "John",
+  "lastName": "Doe",
+   
+  "phoneNumber": "123-456-7890",
+  "gender": "Male",
+  "dateOfBirth": "1990-01-01",
+  "profile_thumb": "profile_thumb_url",
+  "bloodGroup":["A+"|"AB+","B","B+",] 
+  "contact": [
+    {
+      "address1": "456 Second Avenue",
+      "address2": "Apt 789",
+      "city": "Cityville",
+      "state": "State",
+      "country": "Country",
+      "postalCode": "12345"
+    }
+  ],
+    
 }

@@ -7,7 +7,6 @@ import { AuthService } from "./auth.service";
 
 const login: RequestHandler = asyncHandler(async (req, res) => {
   const data = req.body;
-
   const result = await AuthService.login(data);
   const options = {
     httpOnly: true,

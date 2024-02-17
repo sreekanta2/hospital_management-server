@@ -5,16 +5,10 @@ import { UserController } from "./user.controller";
 import { UserZodValidation } from "./user.zodValidation";
 const router = express.Router();
 router
-  .route("/doctor-register")
+  .route("/register")
   .post(
     zodRequestValidationHandler(UserZodValidation.createUserZodSchema),
-    UserController.registerDoctor
-  );
-router
-  .route("/patient-register")
-  .post(
-    zodRequestValidationHandler(UserZodValidation.createUserZodSchema),
-    UserController.registerPatient
+    UserController.register
   );
 
 export const UserRoutes = router;

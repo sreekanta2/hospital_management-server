@@ -1,14 +1,10 @@
-import { Model, ObjectId, Types } from "mongoose";
+import { Model } from "mongoose";
 
 export interface IUser {
-  id: ObjectId | string;
-  email: ObjectId;
-  password: string;
-  confirmPassword: string;
-  refreshToken?: string;
+  email: string;
   role: string;
-  doctor: Types.ObjectId;
-  patient: Types.ObjectId;
+  password: string;
+  refreshToken?: string;
   passwordChangedAt: Date;
   passwordResetToken: string;
   passwordResetTokenExpire: string;

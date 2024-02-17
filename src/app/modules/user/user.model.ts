@@ -5,36 +5,27 @@ import crypto from "crypto";
 
 import mongoose, { Schema } from "mongoose";
 import { IUser, UserModel } from "./user.interface";
+
 const userSchema = new Schema<IUser, UserModel>(
   {
-    id: {
+    email: {
       type: String,
       required: true,
+      unique: true,
     },
     role: {
       type: String,
+      required: true,
     },
     password: {
       type: String,
       required: true,
     },
 
-    email: {
-      type: String,
-      required: true,
-      unique: true,
-    },
     refreshToken: {
       type: String,
     },
-    doctor: {
-      type: Schema.Types.ObjectId,
-      ref: "Doctor",
-    },
-    patient: {
-      type: Schema.Types.ObjectId,
-      ref: "patient",
-    },
+
     passwordChangedAt: {
       type: Date,
     },
@@ -72,7 +63,7 @@ userSchema.statics.isUserExit = async function (id, email) {
   return result;
 };
 userSchema.methods.checkPassword = async function (givenPassword: string) {
-  return bcrypt.compare(givenPassword, this.password);
+  return await bcrypt.compare(givenPassword, this.password);
 };
 userSchema.methods.createResetPassword = async function () {
   const resetToken = crypto.randomBytes(32).toString("hex");

@@ -1,6 +1,11 @@
-import mongoose from "mongoose";
+import mongoose, { Schema } from "mongoose";
+import { bloodGroup, gender } from "./constant";
 
 const patientSchema = new mongoose.Schema({
+  userId: {
+    type: Schema.Types.ObjectId,
+    ref: "User",
+  },
   email: {
     type: String,
     required: true,
@@ -8,8 +13,58 @@ const patientSchema = new mongoose.Schema({
   },
   id: {
     type: String,
-    required: true,
     unique: true,
+    required: true,
+  },
+  username: {
+    type: String,
+    unique: true,
+  },
+  firstName: {
+    type: String,
+  },
+  lastName: {
+    type: String,
+  },
+
+  phoneNumber: {
+    type: String,
+  },
+  gender: {
+    type: String,
+    enum: gender,
+  },
+  dateOfBirth: {
+    type: String,
+  },
+  profile_thumb: {
+    url: { type: String || undefined },
+    public_id: { type: String || undefined },
+  },
+  bloodGroup: {
+    type: String,
+    enum: bloodGroup,
+  },
+
+  contact: {
+    address1: {
+      type: String,
+    },
+    address2: {
+      type: String,
+    },
+    city: {
+      type: String,
+    },
+    state: {
+      type: String,
+    },
+    country: {
+      type: String,
+    },
+    postalCode: {
+      type: String,
+    },
   },
 });
 export const Patient = mongoose.model("patient", patientSchema);

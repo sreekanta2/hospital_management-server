@@ -1,82 +1,63 @@
-import { ObjectId } from "mongoose";
-
-interface Schedule {
-  day: string;
-  hours: {
-    start: string;
-    end: string;
-  }[];
-}
-
-interface Clinic {
-  name: string;
-  address: string;
-  image: {
-    url1: string;
-    url2: string;
-  }[];
-}
-
-interface Contact {
-  address1: string;
-  address2: string;
-  city: string;
-  state: string;
-  country: string;
-  postalCode: string;
-}
-
-interface Education {
-  degree: string;
-  college: string;
-  yearOfCompletion: string;
-}
-
-interface Experience {
-  hospitalName: string;
-  from: string;
-  to: string;
-  designation: string;
-}
-
-interface Award {
-  award: string;
-  year: string;
-}
-
-interface Registration {
-  registration: string;
-  year: string;
-}
-
-interface GalleryImage {
-  imageUrl: string;
-}
+import { Schema } from "mongoose";
 
 export interface IDoctor {
-  email: {
-    type: string;
-  };
-  id: {
-    type: ObjectId;
-  };
-
+  gallery: { url: string | undefined; public_id: string | undefined }[];
+  email: string;
+  id: string;
+  userId: string;
+  username: string;
   firstName: string;
   lastName: string;
   rating: number;
   phoneNumber: string;
-  gender: string;
-  dateOfBirth: string;
-  profile_thumb: string;
-  gallery: GalleryImage[];
-  schedule: Schedule[];
-  clinic: Clinic[];
-  contact: Contact[];
+  gender: "Male" | "Female" | "Other";
+  dateOfBirth: string; // Assuming date is provided as a string for simplicity
+  profile_thumb: {
+    url: string;
+    public_id: string;
+  };
+
+  schedule: {
+    day: string;
+    hours: {
+      start: string;
+      end: string;
+    }[];
+  }[];
+  clinics: Array<Schema.Types.ObjectId>;
+  contact: {
+    address1: string;
+    address2: string;
+    city: string;
+    state: string;
+    country: string;
+    postalCode: string;
+  };
   price: string;
   service: string[];
-  specializations: "";
-  education: Education[];
-  experience: Experience[];
-  awards: Award[];
-  registrations: Registration[];
+  specializations: string;
+  education: {
+    degree: string;
+    college: string;
+    yearOfCompletion: string;
+  }[];
+  experience: {
+    hospitalName: string;
+    from: string; // Assuming date is provided as a string for simplicity
+    to: string; // Assuming date is provided as a string for simplicity
+    designation: string;
+  }[];
+  awards: {
+    award: string;
+    year: string;
+  }[];
+  registrations: {
+    registration: string;
+    year: string;
+  }[];
+}
+
+export interface IGallery {
+  url: string | undefined;
+  public_id: string | undefined;
 }

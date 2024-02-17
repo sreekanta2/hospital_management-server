@@ -1,16 +1,40 @@
 import express from "express";
-import { zodRequestValidationHandler } from "./../../middlewares/zod.middleware";
+import { verifyJwt } from "../../middlewares/auth.middleware";
+import { upload } from "../../middlewares/multer.middleware";
 import { DoctorController } from "./doctor.controller";
-import { DoctorZodValidation } from "./doctor.zodValidation";
 const router = express.Router();
 
 router.route("/").get(DoctorController.getAllDoctor);
-router
-  .route("/update/:id")
-  .patch(
-    zodRequestValidationHandler(DoctorZodValidation.updateDoctorZodSchema),
-    DoctorController.updateDoctor
-  );
+router.route("/create-profile").post(
+  verifyJwt,
+  upload.fields([
+    {
+      name: "profile_thumb",
+      maxCount: 1,
+    },
+    {
+      name: "gallery",
+      maxCount: 4,
+    },
+  ]),
+  // zodRequestValidationHandler(DoctorZodValidation.createDoctorZodSchema),
+  DoctorController.createDoctor
+);
+router.route("/update/:id").patch(
+  verifyJwt,
+  upload.fields([
+    {
+      name: "profile_thumb",
+      maxCount: 1,
+    },
+    {
+      name: "gallery",
+      maxCount: 4,
+    },
+  ]),
+  // zodRequestValidationHandler(DoctorZodValidation.createDoctorZodSchema),
+  DoctorController.updateDoctor
+);
 router.route("/:id").delete(DoctorController.deleteDoctor);
 router.route("/:id").get(DoctorController.getSingleDoctor);
 

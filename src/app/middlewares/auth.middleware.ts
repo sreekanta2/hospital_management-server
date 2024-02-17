@@ -29,6 +29,9 @@ const verifyJwt = async (req: Request, res: Response, next: NextFunction) => {
     const user = await User.findOne({ email: decodedUser.email }).select(
       "-password -refreshToken"
     );
+    if (!user) {
+      throw new ApiError(httpStatus.NOT_FOUND, "user not found");
+    }
     req.user = user;
 
     next();

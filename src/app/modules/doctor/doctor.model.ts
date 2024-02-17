@@ -1,117 +1,90 @@
-import mongoose from "mongoose";
-import { IUser } from "../user/user.interface";
+import mongoose, { Schema } from "mongoose";
+import { IDoctor } from "./doctor.interface";
 
-const scheduleSchema = new mongoose.Schema({
-  day: String,
-  hours: [
-    {
-      start: String,
-      end: String,
-    },
-  ],
-});
-
-const clinicSchema = new mongoose.Schema({
-  name: String,
-  address: String,
-  image: [
-    {
-      url1: String,
-      url2: String,
-    },
-  ],
-});
-
-const contactSchema = new mongoose.Schema({
-  address1: String,
-  address2: String,
-  city: String,
-  state: String,
-  country: String,
-  postalCode: String,
-});
-
-export const doctorSchema = new mongoose.Schema(
-  {
-    email: {
-      type: String,
-      required: true,
-      unique: true,
-    },
-    id: {
-      type: String,
-      required: true,
-      unique: true,
-    },
-
-    firstName: String,
-    lastName: String,
-    rating: Number,
-    phoneNumber: {
-      type: String,
-      unique: true,
-    },
-    gender: {
-      type: String,
-      enum: ["Male", "Female", "Other"],
-    },
-    dateOfBirth: String,
-    profile_thumb: String,
-
-    gallery: [
-      {
-        imageUrl: String,
-      },
-    ],
-    schedule: [scheduleSchema],
-    clinic: [clinicSchema],
-    contact: [contactSchema],
-    price: String,
-    service: [String],
-    Specializations: [String],
-    education: [
-      {
-        degree: String,
-        college: String,
-        yearOfCompletion: String,
-      },
-    ],
-    experience: [
-      {
-        hospitalName: String,
-        from: String,
-        to: String,
-        designation: String,
-      },
-    ],
-    awards: [
-      {
-        award: String,
-        year: String,
-      },
-    ],
-    registrations: [
-      {
-        registration: String,
-        year: String,
-      },
-    ],
+const doctorSchema = new mongoose.Schema({
+  userId: {
+    type: Schema.Types.ObjectId,
+    ref: "User",
   },
-  {
-    timestamps: true,
-  }
-);
-// const doctorSchema1 = new mongoose.Schema({
-//   email: {
-//     type: String,
-//     required: true,
-//     unique: true,
-//   },
-//   id: {
-//     type: String,
-//     required: true,
-//     unique: true,
-//   },
-// });
+  email: {
+    type: String,
+    unique: true,
+  },
+  id: {
+    type: String,
+    unique: true,
+  },
+  username: { type: String, trim: true },
+  firstName: { type: String, trim: true },
+  lastName: { type: String, trim: true },
+  description: { type: String },
+  rating: { type: Number },
+  phoneNumber: { type: String },
+  gender: { type: String, enum: ["Male", "Female", "Other"] },
+  dateOfBirth: { type: Date },
+  profile_thumb: {
+    url: { type: String || undefined },
+    public_id: { type: String || undefined },
+  },
+  gallery: [
+    {
+      url: { type: String || undefined },
+      public_id: { type: String || undefined },
+    },
+  ],
+  schedule: [
+    {
+      day: { type: String },
+      hours: [
+        {
+          start: { type: String },
+          end: { type: String },
+        },
+      ],
+    },
+  ],
+  clinicId: {
+    type: Schema.Types.ObjectId,
+    ref: "Clinic",
+  },
+  contact: {
+    address1: { type: String },
+    address2: { type: String },
+    city: { type: String },
+    state: { type: String },
+    country: { type: String },
+    postalCode: { type: String },
+  },
+  price: { type: String },
+  service: [{ type: String }],
+  specializations: { type: String },
+  education: [
+    {
+      degree: { type: String },
+      college: { type: String },
+      yearOfCompletion: { type: String },
+    },
+  ],
+  experience: [
+    {
+      hospitalName: { type: String },
+      from: { type: Date },
+      to: { type: Date },
+      designation: { type: String },
+    },
+  ],
+  awards: [
+    {
+      award: { type: String },
+      year: { type: String },
+    },
+  ],
+  registrations: [
+    {
+      registration: { type: String },
+      year: { type: String },
+    },
+  ],
+});
 
-export const Doctor = mongoose.model<Partial<IUser>>("Doctor", doctorSchema);
+export const Doctor = mongoose.model<IDoctor>("Doctor", doctorSchema);

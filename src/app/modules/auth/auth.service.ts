@@ -11,6 +11,7 @@ const login = async (payload: ILogin): Promise<ILoginResponse> => {
   const { email, password } = payload;
 
   const user = await User.findOne({ email });
+
   if (!user) {
     throw new ApiError(httpStatus.NOT_FOUND, "User doesn't exit!!");
   }
@@ -20,7 +21,7 @@ const login = async (payload: ILogin): Promise<ILoginResponse> => {
   }
 
   const { accessToken, refreshToken } =
-    await accessTokenAndRefreshTokenGenerate(user.id);
+    await accessTokenAndRefreshTokenGenerate(user.email);
 
   return { accessToken, refreshToken };
 };

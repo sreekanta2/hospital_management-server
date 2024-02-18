@@ -15,8 +15,8 @@ const userSchema = new Schema<IUser, UserModel>(
     },
     role: {
       type: String,
-      required: true,
     },
+    username: { type: String },
     password: {
       type: String,
       required: true,
@@ -49,7 +49,7 @@ userSchema.pre("save", async function (next) {
   this.password = await bcrypt.hash(this.password, 10);
 });
 
-userSchema.statics.isUserExit = async function (id, email) {
+userSchema.statics.isUserExit = async function (email, id) {
   const result = await User.findOne({
     $or: [
       {

@@ -1,7 +1,8 @@
 import mongoose, { Schema } from "mongoose";
 import { bloodGroup, gender } from "./constant";
+import { IPatient } from "./patient.interface";
 
-const patientSchema = new mongoose.Schema(
+export const patientSchema = new mongoose.Schema(
   {
     userId: {
       type: Schema.Types.ObjectId,
@@ -75,4 +76,4 @@ const patientSchema = new mongoose.Schema(
     },
   }
 );
-export const Patient = mongoose.model("patient", patientSchema);
+export const Patient = mongoose.model<IPatient>("patient", patientSchema);

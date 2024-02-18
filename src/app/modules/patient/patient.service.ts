@@ -1,4 +1,3 @@
-import fs from "fs";
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import httpStatus from "http-status";
 import { JwtPayload } from "jsonwebtoken";
@@ -120,7 +119,7 @@ const createPatient = async (
     return cratedPatient;
   } catch (error) {
     if (profile_thumb) {
-      fs.unlinkSync(profile_thumb);
+      // fs.unlinkSync(profile_thumb);
     }
 
     errorLogger.error("Error creating patient profile:", error);

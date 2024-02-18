@@ -3,6 +3,7 @@ import { Model } from "mongoose";
 export interface IUser {
   email: string;
   role: string;
+  username: string;
   password: string;
   refreshToken?: string;
   passwordChangedAt: Date;

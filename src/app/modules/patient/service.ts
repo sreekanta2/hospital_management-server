@@ -1,3 +1,4 @@
+import fs from "fs";
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import httpStatus from "http-status";
 import { JwtPayload } from "jsonwebtoken";
@@ -19,6 +20,98 @@ import { errorLogger } from "../../../shared/logger";
 import { IPatient } from "./interface";
 import { Patient } from "./model";
 import { generatePatientId } from "./patient.utils";
+
+const createPatient = async (
+  avatar: string | undefined,
+  loggedInUser: IUser | JwtPayload,
+  payload: IPatient
+) => {
+  try {
+    const id = await generatePatientId();
+    payload.id = id;
+    payload.email = loggedInUser.email;
+
+    const patient = await Patient.findOne({ email: loggedInUser.email });
+    if (patient) {
+      throw new ApiError(
+        httpStatus.NOT_FOUND,
+        "Patient already exists, please update your profile!"
+      );
+    }
+
+    // // cloudinary
+    if (avatar) {
+      const profile = await fileUploadOnCloudinary(avatar);
+      if (!profile) {
+        throw new ApiError(
+          httpStatus.BAD_REQUEST,
+          " profile thumb Failed uploaded!"
+        );
+      }
+      const profileImage = {
+        url: profile.secure_url,
+        public_id: profile.public_id,
+      };
+
+      payload.avatar = profileImage;
+    }
+
+    const newPatient = await Patient.create(payload);
+    const cratedPatient = Patient.findById(newPatient._id).populate({
+      path: "userId",
+    });
+    if (!createPatient) {
+      throw new ApiError(
+        httpStatus.BAD_REQUEST,
+        "Patient  field  his created profile!! "
+      );
+    }
+    return cratedPatient;
+  } catch (error) {
+    if (avatar) {
+      fs.unlinkSync(avatar);
+    }
+
+    errorLogger.error("Error creating patient profile:", error);
+  }
+};
+const updatePatient = async (
+  avatar: string | undefined,
+  id: string,
+  payload: IPatient
+) => {
+  const isExit = await Patient.findOne({ id: id });
+
+  if (!isExit) {
+    throw new ApiError(httpStatus.NOT_FOUND, "patient not found!");
+  }
+
+  // cloudinary
+  if (avatar && isExit?.avatar) {
+    await deleteImageOnCloudinary(isExit.avatar.public_id);
+  }
+
+  if (avatar) {
+    const profile = await fileUploadOnCloudinary(avatar);
+    if (!profile) {
+      throw new ApiError(
+        httpStatus.BAD_REQUEST,
+        " profile thumb Failed uploaded!"
+      );
+    }
+    const profileImage = {
+      url: profile.secure_url,
+      public_id: profile.public_id,
+    };
+    payload.avatar = profileImage;
+  }
+
+  const patient = await Patient.findOneAndUpdate({ id: id }, payload, {
+    new: true,
+  });
+
+  return patient;
+};
 const getAllPatient = async (
   options: IPaginationOptions,
   filter: IFilterableFields
@@ -71,97 +164,6 @@ const getAllPatient = async (
     data: patients,
   };
 };
-const createPatient = async (
-  profile_thumb: string | undefined,
-  loggedInUser: IUser | JwtPayload,
-  payload: IPatient
-) => {
-  try {
-    const id = await generatePatientId();
-    payload.id = id;
-    payload.email = loggedInUser.email;
-
-    const patient = await Patient.findOne({ email: loggedInUser.email });
-    if (patient) {
-      throw new ApiError(
-        httpStatus.NOT_FOUND,
-        "Patient already exists, please update your profile!"
-      );
-    }
-
-    // // cloudinary
-    if (profile_thumb) {
-      const profile = await fileUploadOnCloudinary(profile_thumb);
-      if (!profile) {
-        throw new ApiError(
-          httpStatus.BAD_REQUEST,
-          " profile thumb Failed uploaded!"
-        );
-      }
-      const profileImage = {
-        url: profile.secure_url,
-        public_id: profile.public_id,
-      };
-
-      payload.profile_thumb = profileImage;
-    }
-
-    const newPatient = await Patient.create(payload);
-    const cratedPatient = Patient.findById(newPatient._id).populate({
-      path: "userId",
-    });
-    if (!createPatient) {
-      throw new ApiError(
-        httpStatus.BAD_REQUEST,
-        "Patient  field  his created profile!! "
-      );
-    }
-    return cratedPatient;
-  } catch (error) {
-    if (profile_thumb) {
-      // fs.unlinkSync(profile_thumb);
-    }
-
-    errorLogger.error("Error creating patient profile:", error);
-  }
-};
-const updatePatient = async (
-  profile_thumb: string | undefined,
-  id: string,
-  payload: IPatient
-) => {
-  const isExit = await Patient.findOne({ id: id });
-
-  if (!isExit) {
-    throw new ApiError(httpStatus.NOT_FOUND, "patient not found!");
-  }
-
-  // cloudinary
-  if (profile_thumb && isExit?.profile_thumb) {
-    await deleteImageOnCloudinary(isExit.profile_thumb.public_id);
-  }
-
-  if (profile_thumb) {
-    const profile = await fileUploadOnCloudinary(profile_thumb);
-    if (!profile) {
-      throw new ApiError(
-        httpStatus.BAD_REQUEST,
-        " profile thumb Failed uploaded!"
-      );
-    }
-    const profileImage = {
-      url: profile.secure_url,
-      public_id: profile.public_id,
-    };
-    payload.profile_thumb = profileImage;
-  }
-
-  const patient = await Patient.findOneAndUpdate({ id: id }, payload, {
-    new: true,
-  });
-
-  return patient;
-};
 const getSinglePatient = async (payload: string) => {
   const patient = await Patient.findOne({
     $or: [{ email: payload }, { id: payload }],
@@ -180,8 +182,8 @@ const deletePatient = async (id: string) => {
     throw new ApiError(httpStatus.NOT_FOUND, "Patient not found!");
   }
   // delete
-  if (isExit?.profile_thumb?.public_id) {
-    await deleteImageOnCloudinary(isExit.profile_thumb.public_id);
+  if (isExit?.avatar?.public_id) {
+    await deleteImageOnCloudinary(isExit.avatar.public_id);
   }
 
   const patient = await Patient.deleteOne({ id });

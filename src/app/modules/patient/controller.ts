@@ -5,7 +5,7 @@ import { sendResponse } from "../../../shared/sendResponse";
 import ApiError from "../../../utils/ApiError";
 import { asyncHandler } from "../../../utils/asyncHandler";
 import pick from "../../../utils/pick";
-import { PatientService } from "./patient.service";
+import { PatientService } from "./service";
 
 const getAllPatient: RequestHandler = asyncHandler(async (req, res) => {
   const paginationOptions = req.query;
@@ -21,7 +21,7 @@ const getAllPatient: RequestHandler = asyncHandler(async (req, res) => {
   });
 });
 const createPatient: RequestHandler = asyncHandler(async (req, res) => {
-  const profile_thumb = req.file?.path;
+  const avatar = req.file?.path;
   const data = req.body;
   const loggedInUser = req.user;
 
@@ -29,7 +29,7 @@ const createPatient: RequestHandler = asyncHandler(async (req, res) => {
     throw new ApiError(httpStatus.UNAUTHORIZED, "User UNAUTHORIZED ");
   }
   const patient = await PatientService.createPatient(
-    profile_thumb,
+    avatar,
     loggedInUser,
     data
   );
@@ -41,12 +41,12 @@ const createPatient: RequestHandler = asyncHandler(async (req, res) => {
   });
 });
 const updatePatient: RequestHandler = asyncHandler(async (req, res) => {
-  const profile_thumb = req.file?.path;
+  const avatar = req.file?.path;
 
   const data = req.body;
   const { id } = req.params;
 
-  const patient = await PatientService.updatePatient(profile_thumb, id, data);
+  const patient = await PatientService.updatePatient(avatar, id, data);
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,

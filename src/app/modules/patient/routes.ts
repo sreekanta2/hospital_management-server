@@ -10,14 +10,14 @@ const router = express.Router();
 router.route("/").get(PatientController.getAllPatient);
 router.route("/create-patient").post(
   verifyJwt,
-  upload.single("profile_thumb"),
+  upload.single("avatar"),
   zodRequestValidationHandler(PatientZodValidation.patientZodSchema),
 
   PatientController.createPatient
 );
 router.route("/update/:id").patch(
   verifyJwt,
-  upload.single("profile_thumb"),
+  upload.single("avatar"),
   zodRequestValidationHandler(PatientZodValidation.updatePatientZodSchema),
 
   PatientController.updatePatient

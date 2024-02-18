@@ -7,14 +7,10 @@ import pick from "../../../utils/pick";
 import { DoctorService } from "./service";
 
 const createDoctor: RequestHandler = asyncHandler(async (req, res) => {
-  if (
-    !req.files ||
-    !("profile_thumb" in req.files) ||
-    !("gallery" in req.files)
-  ) {
+  if (!req.files || !("avatar" in req.files) || !("gallery" in req.files)) {
     return res.status(400).send("Invalid request: Missing file properties");
   }
-  const profileThumbFiles = req.files["profile_thumb"] as Express.Multer.File[];
+  const profileThumbFiles = req.files["avatar"] as Express.Multer.File[];
   const gallery = req.files["gallery"] as Express.Multer.File[];
   const data = req.body;
   const loggedInUser = req.user;
@@ -33,14 +29,10 @@ const createDoctor: RequestHandler = asyncHandler(async (req, res) => {
   });
 });
 const updateDoctor: RequestHandler = asyncHandler(async (req, res) => {
-  if (
-    !req.files ||
-    !("profile_thumb" in req.files) ||
-    !("gallery" in req.files)
-  ) {
+  if (!req.files || !("avatar" in req.files) || !("gallery" in req.files)) {
     return res.status(400).send("Invalid request: Missing file properties");
   }
-  const profileThumbFiles = req.files["profile_thumb"] as Express.Multer.File[];
+  const profileThumbFiles = req.files["avatar"] as Express.Multer.File[];
   const gallery = req.files["gallery"] as Express.Multer.File[];
   const data = req.body;
 

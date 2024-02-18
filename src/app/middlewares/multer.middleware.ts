@@ -1,11 +1,8 @@
 import { Request } from "express";
 import multer from "multer";
 import path from "path";
-
 // File upload folder
 const UPLOADS_FOLDER = "./public/temp";
-
-// var upload = multer({ dest: UPLOADS_FOLDER });
 
 // define the storage
 const storage = multer.diskStorage({
@@ -33,15 +30,25 @@ export const upload = multer({
   limits: {
     fileSize: 1000000, // 1MB
   },
-  fileFilter: (req, files, cb) => {
-    if (
-      files.mimetype === "image/png" ||
-      files.mimetype === "image/jpg" ||
-      files.mimetype === "image/jpeg"
-    ) {
-      cb(null, true);
+  fileFilter: (req, file, cb) => {
+    if (file.fieldname === "avatar" || file.fieldname === "gallery") {
+      if (
+        file.mimetype === "image/png" ||
+        file.mimetype === "image/jpg" ||
+        file.mimetype === "image/jpeg"
+      ) {
+        cb(null, true);
+      } else {
+        cb(new Error("Onley jpg png or jpeg allowed for uploaded!"));
+      }
+    } else if (file.fieldname === "doc") {
+      if (file.mimetype === "application/pdf") {
+        cb(null, true);
+      } else {
+        cb(new Error("Only .pdf format allowed!"));
+      }
     } else {
-      cb(new Error("Only .jpg, .png or .jpeg format allowed!"));
+      cb(new Error("There was an unknown error!"));
     }
   },
 });

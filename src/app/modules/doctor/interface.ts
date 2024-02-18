@@ -12,7 +12,7 @@ export interface IDoctor {
   phoneNumber: string;
   gender: "Male" | "Female" | "Other";
   dateOfBirth: string; // Assuming date is provided as a string for simplicity
-  profile_thumb: {
+  avatar: {
     url: string;
     public_id: string;
   };

@@ -23,7 +23,7 @@ import { generateDoctorId } from "./utils";
 const createDoctor = async (
   payload: IDoctor,
   loggedInUser: JwtPayload,
-  profile_thumb: string,
+  avatar: string,
   galleryImages: Express.Multer.File[]
 ) => {
   try {
@@ -41,7 +41,7 @@ const createDoctor = async (
       );
     }
 
-    const profile = await fileUploadOnCloudinary(profile_thumb);
+    const profile = await fileUploadOnCloudinary(avatar);
 
     if (!profile) {
       throw new ApiError(httpStatus.BAD_REQUEST, "Profile pic upload failed!");
@@ -67,7 +67,7 @@ const createDoctor = async (
 
     payload.id = id;
     payload.email = loggedInUser.email;
-    payload.profile_thumb = profileImage;
+    payload.avatar = profileImage;
     payload.gallery = gallery;
 
     const doctor = await Doctor.create(payload);
@@ -90,8 +90,8 @@ const createDoctor = async (
 
     return newDoctor;
   } catch (error) {
-    if (profile_thumb) {
-      fs.unlinkSync(profile_thumb);
+    if (avatar) {
+      fs.unlinkSync(avatar);
     }
     if (galleryImages) {
       galleryImages.forEach((image) => {
@@ -103,7 +103,7 @@ const createDoctor = async (
 };
 
 const updateDoctor = async (
-  profile_thumb: string,
+  avatar: string,
   galleryImages: Express.Multer.File[],
   payload: IDoctor,
   id: string
@@ -115,8 +115,8 @@ const updateDoctor = async (
       throw new ApiError(httpStatus.NOT_FOUND, "doctor not found!");
     }
     // delete
-    if (profile_thumb && isExit.profile_thumb.public_id) {
-      await deleteImageOnCloudinary(isExit.profile_thumb.public_id);
+    if (avatar && isExit.avatar.public_id) {
+      await deleteImageOnCloudinary(isExit.avatar.public_id);
     }
     if (galleryImages.length > 0 && isExit.gallery.length > 0) {
       const deletedPromise = isExit.gallery.map(async (image) => {
@@ -126,7 +126,7 @@ const updateDoctor = async (
     }
 
     // new uploading
-    const profile = await fileUploadOnCloudinary(profile_thumb);
+    const profile = await fileUploadOnCloudinary(avatar);
 
     if (!profile) {
       throw new ApiError(httpStatus.BAD_REQUEST, "Profile pic upload failed!");
@@ -152,7 +152,7 @@ const updateDoctor = async (
 
     payload.id = id;
 
-    payload.profile_thumb = profileImage;
+    payload.avatar = profileImage;
     payload.gallery = gallery;
 
     const doctor = await Doctor.findOneAndUpdate({ id: id }, payload, {
@@ -161,8 +161,8 @@ const updateDoctor = async (
 
     return doctor;
   } catch (error) {
-    if (profile_thumb) {
-      fs.unlinkSync(profile_thumb);
+    if (avatar) {
+      fs.unlinkSync(avatar);
     }
     if (galleryImages) {
       galleryImages.forEach((image) => {
@@ -238,8 +238,8 @@ const deleteDoctor = async (id: string) => {
       throw new ApiError(httpStatus.NOT_FOUND, "doctor not found!");
     }
     // delete
-    if (isExit.profile_thumb.public_id) {
-      await deleteImageOnCloudinary(isExit.profile_thumb.public_id);
+    if (isExit.avatar.public_id) {
+      await deleteImageOnCloudinary(isExit.avatar.public_id);
     }
     if (isExit.gallery.length > 0) {
       const deletedPromise = isExit.gallery.map(async (image) => {

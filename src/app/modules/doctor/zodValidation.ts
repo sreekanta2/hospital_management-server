@@ -11,7 +11,7 @@ const createDoctorZodSchema = z.object({
   phoneNumber: z.string(),
   gender: z.enum(["Male", "Female", "Other"]),
   dateOfBirth: z.string(),
-  profile_thumb: z.object({
+  avatar: z.object({
     url: z.string(),
     public_id: z.string(),
   }),

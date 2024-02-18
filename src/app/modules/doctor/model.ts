@@ -23,7 +23,7 @@ const doctorSchema = new mongoose.Schema(
     phoneNumber: { type: String },
     gender: { type: String, enum: ["Male", "Female", "Other"] },
     dateOfBirth: { type: Date },
-    profile_thumb: {
+    avatar: {
       url: { type: String || undefined },
       public_id: { type: String || undefined },
     },

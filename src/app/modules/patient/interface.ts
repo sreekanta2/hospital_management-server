@@ -8,7 +8,7 @@ export interface IPatient {
   phoneNumber: string;
   gender: "Male" | "Female" | "Other";
   dateOfBirth: string;
-  profile_thumb: {
+  avatar: {
     url: string | undefined;
     public_id: string | undefined;
   };

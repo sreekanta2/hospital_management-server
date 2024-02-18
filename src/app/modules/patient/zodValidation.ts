@@ -8,7 +8,7 @@ const patientZodSchema = z.object({
     phoneNumber: z.string(),
     gender: z.enum(["Male", "Female", "Other"]),
     dateOfBirth: z.string(),
-    profile_thumb: z.string().optional(),
+    avatar: z.string().optional(),
     bloodGroup: z.enum([
       "A+",
       "A-",
@@ -40,7 +40,7 @@ const updatePatientZodSchema = z.object({
     phoneNumber: z.string().optional(),
     gender: z.enum(["Male", "Female", "Other"]).optional(),
     dateOfBirth: z.string().optional(),
-    profile_thumb: z.string().optional(),
+    avatar: z.string().optional(),
     bloodGroup: z
       .enum(["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-", "unknown"])
       .optional(),

@@ -9,7 +9,7 @@ router.route("/create-profile").post(
   verifyJwt,
   upload.fields([
     {
-      name: "profile_thumb",
+      name: "avatar",
       maxCount: 1,
     },
     {
@@ -24,7 +24,7 @@ router.route("/update/:id").patch(
   verifyJwt,
   upload.fields([
     {
-      name: "profile_thumb",
+      name: "avatar",
       maxCount: 1,
     },
     {

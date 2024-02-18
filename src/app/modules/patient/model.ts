@@ -39,7 +39,7 @@ export const patientSchema = new mongoose.Schema(
     dateOfBirth: {
       type: String,
     },
-    profile_thumb: {
+    avatar: {
       url: { type: String || undefined },
       public_id: { type: String || undefined },
     },

@@ -3,7 +3,7 @@ import httpStatus from "http-status";
 import { sendResponse } from "../../../shared/sendResponse";
 import ApiError from "../../../utils/ApiError";
 import { asyncHandler } from "../../../utils/asyncHandler";
-import { AuthService } from "./auth.service";
+import { AuthService } from "./service";
 
 const login: RequestHandler = asyncHandler(async (req, res) => {
   const data = req.body;

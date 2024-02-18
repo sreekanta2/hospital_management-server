@@ -1,5 +1,5 @@
 import httpStatus from "http-status";
-import { User } from "../app/modules/user/user.model";
+import { User } from "../app/modules/user/model";
 import ApiError from "./ApiError";
 
 export const accessTokenAndRefreshTokenGenerate = async (payload: string) => {

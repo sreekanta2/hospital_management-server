@@ -1,5 +1,5 @@
 import { Model, Schema, model } from "mongoose";
-import { ILogin } from "./auth.interface";
+import { ILogin } from "./interface";
 
 const LoginSchema = new Schema<ILogin>({
   email: {

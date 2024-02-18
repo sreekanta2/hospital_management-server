@@ -13,12 +13,12 @@ import {
   deleteImageOnCloudinary,
   fileUploadOnCloudinary,
 } from "../../../utils/cloudinary";
-import { IDoctor, IGallery } from "./doctor.interface";
-import { Doctor } from "./doctor.model";
+import { IDoctor, IGallery } from "./interface";
+import { Doctor } from "./model";
 
 import fs from "fs";
 import { errorLogger } from "../../../shared/logger";
-import { generateDoctorId } from "./doctor.utils";
+import { generateDoctorId } from "./utils";
 
 const createDoctor = async (
   payload: IDoctor,

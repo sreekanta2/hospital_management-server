@@ -2,7 +2,7 @@ import { NextFunction, Request, Response } from "express";
 import httpStatus from "http-status";
 import jwt, { JwtPayload, Secret } from "jsonwebtoken";
 import ApiError from "../../utils/ApiError";
-import { User } from "../modules/user/user.model";
+import { User } from "../modules/user/model";
 
 const verifyJwt = async (req: Request, res: Response, next: NextFunction) => {
   try {

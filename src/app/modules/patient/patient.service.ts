@@ -13,11 +13,11 @@ import {
   fileUploadOnCloudinary,
 } from "../../../utils/cloudinary";
 import { paginationCalculator } from "../../../utils/paginationHelper";
-import { IUser } from "../user/user.interface";
+import { IUser } from "../user/interface";
 
 import { errorLogger } from "../../../shared/logger";
-import { IPatient } from "./patient.interface";
-import { Patient } from "./patient.model";
+import { IPatient } from "./interface";
+import { Patient } from "./model";
 import { generatePatientId } from "./patient.utils";
 const getAllPatient = async (
   options: IPaginationOptions,

@@ -1,4 +1,4 @@
-import { Patient } from "./patient.model";
+import { Patient } from "./model";
 
 const findLastPatientId = async () => {
   const currentId = await Patient.findOne({}, { id: 1, _id: 0 })

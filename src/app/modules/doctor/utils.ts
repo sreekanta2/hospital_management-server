@@ -1,4 +1,4 @@
-import { Doctor } from "./doctor.model";
+import { Doctor } from "./model";
 
 // generate id
 const findLastDoctorId = async () => {

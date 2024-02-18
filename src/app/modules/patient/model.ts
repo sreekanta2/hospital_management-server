@@ -1,6 +1,6 @@
 import mongoose, { Schema } from "mongoose";
 import { bloodGroup, gender } from "./constant";
-import { IPatient } from "./patient.interface";
+import { IPatient } from "./interface";
 
 export const patientSchema = new mongoose.Schema(
   {

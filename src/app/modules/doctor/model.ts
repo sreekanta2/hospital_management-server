@@ -1,5 +1,5 @@
 import mongoose, { Schema } from "mongoose";
-import { IDoctor } from "./doctor.interface";
+import { IDoctor } from "./interface";
 
 const doctorSchema = new mongoose.Schema(
   {

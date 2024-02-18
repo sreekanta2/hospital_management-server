@@ -2,7 +2,7 @@ import { RequestHandler } from "express";
 import httpStatus from "http-status";
 import { sendResponse } from "../../../shared/sendResponse";
 import { asyncHandler } from "../../../utils/asyncHandler";
-import { AppointmentService } from "./appointment.service";
+import { AppointmentService } from "./service";
 
 const createAppointment: RequestHandler = asyncHandler(async (req, res) => {
   const data = req.body;

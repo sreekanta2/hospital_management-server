@@ -4,7 +4,7 @@ import bcrypt from "bcrypt";
 import crypto from "crypto";
 
 import mongoose, { Schema } from "mongoose";
-import { IUser, UserModel } from "./user.interface";
+import { IUser, UserModel } from "./interface";
 
 const userSchema = new Schema<IUser, UserModel>(
   {

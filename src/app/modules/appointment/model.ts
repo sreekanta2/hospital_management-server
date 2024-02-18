@@ -1,5 +1,5 @@
 import { Schema, model } from "mongoose";
-import { IAppointment } from "./appointment.interface";
+import { IAppointment } from "./interface";
 
 const appointmentSchema = new Schema(
   {

@@ -1,7 +1,7 @@
 import httpStatus from "http-status";
 import ApiError from "../../../utils/ApiError";
-import { IUser } from "./user.interface";
-import { User } from "./user.model";
+import { IUser } from "./interface";
+import { User } from "./model";
 
 const doctorRegister = async (payload: IUser): Promise<IUser> => {
   const isUserExit = await User.findOne({ email: payload.email });

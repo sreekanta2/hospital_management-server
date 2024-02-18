@@ -2,8 +2,8 @@ import express from "express";
 import { verifyJwt } from "../../middlewares/auth.middleware";
 import { upload } from "../../middlewares/multer.middleware";
 import { zodRequestValidationHandler } from "../../middlewares/zod.middleware";
-import { PatientController } from "./patient.controller";
-import { PatientZodValidation } from "./patient.zodValidation";
+import { PatientController } from "./controller";
+import { PatientZodValidation } from "./zodValidation";
 
 const router = express.Router();
 

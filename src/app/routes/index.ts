@@ -1,11 +1,11 @@
 import express from "express";
-import { AppointmentRoutes } from "../modules/appointment/appointment.route";
-import { AuthRoutes } from "../modules/auth/auth.route";
-import { DoctorRoutes } from "../modules/doctor/doctor.route";
-import { PatientRoutes } from "../modules/patient/patient.route";
+import { AppointmentRoutes } from "../modules/appointment/routes";
+import { AuthRoutes } from "../modules/auth/routes";
+import { DoctorRoutes } from "../modules/doctor/routes";
+import { PatientRoutes } from "../modules/patient/routes";
 import { PrescriptionRoutes } from "../modules/prescription/routes";
 import { ReviewRoutes } from "../modules/review/routes";
-import { UserRoutes } from "../modules/user/user.route";
+import { UserRoutes } from "../modules/user/routes";
 
 const router = express.Router();
 

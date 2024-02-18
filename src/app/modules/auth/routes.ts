@@ -1,9 +1,9 @@
 import express from "express";
-import { zodRequestValidationHandler } from "./../../middlewares/zod.middleware";
+import { zodRequestValidationHandler } from "../../middlewares/zod.middleware";
 
 import { verifyJwt } from "../../middlewares/auth.middleware";
-import { AuthController } from "./auth.controller";
-import { AuthValidation } from "./auth.zodValidation";
+import { AuthController } from "./controller";
+import { AuthValidation } from "./zodValidation";
 const router = express.Router();
 router
   .route("/login")

@@ -2,8 +2,8 @@ import express from "express";
 
 import { verifyJwt } from "../../middlewares/auth.middleware";
 import { zodRequestValidationHandler } from "../../middlewares/zod.middleware";
-import { UserController } from "./user.controller";
-import { UserZodValidation } from "./user.zodValidation";
+import { UserController } from "./controller";
+import { UserZodValidation } from "./zodValidation";
 const router = express.Router();
 router
   .route("/doctor-register")

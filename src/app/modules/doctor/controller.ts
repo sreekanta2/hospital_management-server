@@ -4,7 +4,7 @@ import { searchableFields } from "../../../constant";
 import { sendResponse } from "../../../shared/sendResponse";
 import { asyncHandler } from "../../../utils/asyncHandler";
 import pick from "../../../utils/pick";
-import { DoctorService } from "./doctor.service";
+import { DoctorService } from "./service";
 
 const createDoctor: RequestHandler = asyncHandler(async (req, res) => {
   if (

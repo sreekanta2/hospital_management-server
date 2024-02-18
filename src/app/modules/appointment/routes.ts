@@ -1,8 +1,8 @@
 import express from "express";
 import { verifyJwt } from "../../middlewares/auth.middleware";
 import { zodRequestValidationHandler } from "../../middlewares/zod.middleware";
-import { AppointmentController } from "./appointment.controller";
-import { AppointmentZodSchema } from "./appointment.zodValidation";
+import { AppointmentController } from "./controller";
+import { AppointmentZodSchema } from "./zodValidation";
 
 const router = express.Router();
 

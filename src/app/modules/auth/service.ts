@@ -4,8 +4,8 @@ import { JwtPayload } from "jsonwebtoken";
 import ApiError from "../../../utils/ApiError";
 import { accessTokenAndRefreshTokenGenerate } from "../../../utils/generateAccessRefreshToken";
 import { sendEmail } from "../../../utils/sendMail";
-import { User } from "../user/user.model";
-import { IChangePassword, ILogin, ILoginResponse } from "./auth.interface";
+import { User } from "../user/model";
+import { IChangePassword, ILogin, ILoginResponse } from "./interface";
 
 const login = async (payload: ILogin): Promise<ILoginResponse> => {
   const { email, password } = payload;

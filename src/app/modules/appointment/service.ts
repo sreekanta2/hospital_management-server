@@ -1,7 +1,7 @@
 import httpStatus from "http-status";
 import ApiError from "../../../utils/ApiError";
-import { IAppointment } from "./appointment.interface";
-import { Appointment } from "./appointment.model";
+import { IAppointment } from "./interface";
+import { Appointment } from "./model";
 
 const createAppointment = async (
   payload: IAppointment

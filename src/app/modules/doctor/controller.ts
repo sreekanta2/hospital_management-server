@@ -6,40 +6,18 @@ import { asyncHandler } from "../../../utils/asyncHandler";
 import pick from "../../../utils/pick";
 import { DoctorService } from "./service";
 
-const createDoctor: RequestHandler = asyncHandler(async (req, res) => {
-  if (!req.files || !("avatar" in req.files) || !("gallery" in req.files)) {
-    return res.status(400).send("Invalid request: Missing file properties");
-  }
-  const profileThumbFiles = req.files["avatar"] as Express.Multer.File[];
-  const gallery = req.files["gallery"] as Express.Multer.File[];
-  const data = req.body;
-  const loggedInUser = req.user;
-
-  const doctor = await DoctorService.createDoctor(
-    data,
-    loggedInUser,
-    profileThumbFiles[0].path,
-    gallery
-  );
-  sendResponse(res, {
-    statusCode: httpStatus.OK,
-    success: true,
-    message: " Doctor successfully  create profile  ",
-    data: doctor,
-  });
-});
 const updateDoctor: RequestHandler = asyncHandler(async (req, res) => {
   if (!req.files || !("avatar" in req.files) || !("gallery" in req.files)) {
     return res.status(400).send("Invalid request: Missing file properties");
   }
-  const profileThumbFiles = req.files["avatar"] as Express.Multer.File[];
+  const avatar = req.files["avatar"] as Express.Multer.File[];
   const gallery = req.files["gallery"] as Express.Multer.File[];
   const data = req.body;
 
   const { id } = req.params;
 
   const doctor = await DoctorService.updateDoctor(
-    profileThumbFiles[0].path,
+    avatar[0].path,
     gallery,
     data,
     id
@@ -87,7 +65,6 @@ const deleteDoctor: RequestHandler = asyncHandler(async (req, res) => {
   });
 });
 export const DoctorController = {
-  createDoctor,
   getAllDoctor,
   updateDoctor,
   getSingleDoctor,

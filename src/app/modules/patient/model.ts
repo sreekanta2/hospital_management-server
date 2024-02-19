@@ -20,7 +20,6 @@ export const patientSchema = new mongoose.Schema(
     },
     username: {
       type: String,
-      unique: true,
     },
     firstName: {
       type: String,
@@ -76,4 +75,4 @@ export const patientSchema = new mongoose.Schema(
     },
   }
 );
-export const Patient = mongoose.model<IPatient>("patient", patientSchema);
+export const Patient = mongoose.model<IPatient>("Patient", patientSchema);

@@ -1,4 +1,4 @@
-export const DB_NAME = "hospital-management";
+export const DB_NAME = "hospital_management";
 export const paginationFields = ["page", "limit", "sortBy", "sortOrder"];
 export const searchableFields = [
   "searchTerm",

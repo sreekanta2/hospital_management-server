@@ -1,9 +1,11 @@
-import { Model } from "mongoose";
+import mongoose, { Model } from "mongoose";
 
-export interface IUser {
+export interface IUser extends Document {
   email: string;
   role: string;
-  username: string;
+  id: string;
+  doctorId: mongoose.Types.ObjectId;
+  patientId: mongoose.Types.ObjectId;
   password: string;
   refreshToken?: string;
   passwordChangedAt: Date;

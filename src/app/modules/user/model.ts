@@ -15,8 +15,21 @@ const userSchema = new Schema<IUser, UserModel>(
     },
     role: {
       type: String,
+      required: true,
     },
-    username: { type: String },
+    id: {
+      type: String,
+      required: true,
+      unique: true,
+    },
+    doctorId: {
+      type: Schema.Types.ObjectId,
+      ref: "Doctor",
+    },
+    patientId: {
+      type: Schema.Types.ObjectId,
+      ref: "Patient",
+    },
     password: {
       type: String,
       required: true,

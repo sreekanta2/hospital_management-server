@@ -4,6 +4,11 @@ import app from "./app";
 import connectDB from "./db";
 import { errorLogger } from "./shared/logger";
 
+process.on("uncaughtException", () => {
+  console.log("uncaught exception detected");
+  process.exit(1);
+});
+
 dotenv.config({
   path: "./.env",
 });

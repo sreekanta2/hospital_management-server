@@ -1,106 +1,22 @@
+import fs from "fs";
 import httpStatus from "http-status";
-import { JwtPayload } from "jsonwebtoken";
 import { SortOrder } from "mongoose";
 import { searchableFields } from "../../../constant";
 import {
   IFilterableFields,
   IPaginationOptions,
 } from "../../../interfaces/common";
-import ApiError from "../../../utils/ApiError";
-import { paginationCalculator } from "../../../utils/paginationHelper";
-
-import {
-  deleteImageOnCloudinary,
-  fileUploadOnCloudinary,
-} from "../../../utils/cloudinary";
-import { IDoctor, IGallery } from "./interface";
-import { Doctor } from "./model";
-
-import fs from "fs";
 import { errorLogger } from "../../../shared/logger";
-import { generateDoctorId } from "./utils";
-
-const createDoctor = async (
-  payload: IDoctor,
-  loggedInUser: JwtPayload,
-  avatar: string,
-  galleryImages: Express.Multer.File[]
-) => {
-  try {
-    const id = await generateDoctorId();
-
-    const IsExitDoctor = await Doctor.findOne(
-      { email: loggedInUser.email },
-      { email: 1 }
-    );
-
-    if (IsExitDoctor) {
-      throw new ApiError(
-        httpStatus.NOT_FOUND,
-        "Doctor profile already created, please update your profile!"
-      );
-    }
-
-    const profile = await fileUploadOnCloudinary(avatar);
-
-    if (!profile) {
-      throw new ApiError(httpStatus.BAD_REQUEST, "Profile pic upload failed!");
-    }
-
-    const profileImage = {
-      url: profile.secure_url,
-      public_id: profile.public_id,
-    };
-
-    const gallery: IGallery[] = [];
-    if (galleryImages) {
-      const uploadPromises = galleryImages.map(async (image) => {
-        const galleryImage = await fileUploadOnCloudinary(image.path);
-
-        gallery.push({
-          url: galleryImage?.secure_url,
-          public_id: galleryImage?.public_id,
-        });
-      });
-      await Promise.all(uploadPromises);
-    }
-
-    payload.id = id;
-    payload.email = loggedInUser.email;
-    payload.avatar = profileImage;
-    payload.gallery = gallery;
-
-    const doctor = await Doctor.create(payload);
-    if (!doctor) {
-      throw new ApiError(
-        httpStatus.BAD_REQUEST,
-        "Failed to create doctor profile please try again !!!"
-      );
-    }
-    const newDoctor = await Doctor.findById(doctor._id).populate({
-      path: "userId",
-    });
-
-    if (!newDoctor) {
-      throw new ApiError(
-        httpStatus.BAD_REQUEST,
-        "Patient failed to create his profile!"
-      );
-    }
-
-    return newDoctor;
-  } catch (error) {
-    if (avatar) {
-      fs.unlinkSync(avatar);
-    }
-    if (galleryImages) {
-      galleryImages.forEach((image) => {
-        fs.unlinkSync(image.path);
-      });
-    }
-    errorLogger.error("Error creating doctor profile:", error);
-  }
-};
+import ApiError from "../../../utils/ApiError";
+import {
+  avatarUploaded,
+  deleteAvatar,
+  deleteGalleryImages,
+  uploadGalleryImages,
+} from "../../../utils/cloudinary";
+import { paginationCalculator } from "../../../utils/paginationHelper";
+import { IDoctor } from "./interface";
+import { Doctor } from "./model";
 
 const updateDoctor = async (
   avatar: string,
@@ -109,57 +25,47 @@ const updateDoctor = async (
   id: string
 ) => {
   try {
-    const isExit = await Doctor.findOne({ id: id });
+    const existingDoctor = await Doctor.findById(id);
 
-    if (!isExit) {
-      throw new ApiError(httpStatus.NOT_FOUND, "doctor not found!");
-    }
-    // delete
-    if (avatar && isExit.avatar.public_id) {
-      await deleteImageOnCloudinary(isExit.avatar.public_id);
-    }
-    if (galleryImages.length > 0 && isExit.gallery.length > 0) {
-      const deletedPromise = isExit.gallery.map(async (image) => {
-        await deleteImageOnCloudinary(image?.public_id);
-      });
-      await Promise.all(deletedPromise);
+    if (!existingDoctor) {
+      throw new ApiError(httpStatus.NOT_FOUND, "Doctor not found!");
     }
 
-    // new uploading
-    const profile = await fileUploadOnCloudinary(avatar);
-
-    if (!profile) {
-      throw new ApiError(httpStatus.BAD_REQUEST, "Profile pic upload failed!");
+    const savedAvatar = await avatarUploaded(
+      avatar,
+      existingDoctor.avatar.public_id
+    );
+    if (!savedAvatar) {
+      throw new ApiError(httpStatus.BAD_REQUEST, "avatar  uploaded field!");
     }
-
-    const profileImage = {
-      url: profile.secure_url,
-      public_id: profile.public_id,
+    existingDoctor.avatar = {
+      url: savedAvatar.secure_url,
+      public_id: savedAvatar.public_id,
     };
 
-    const gallery: IGallery[] = [];
-    if (galleryImages) {
-      const uploadPromises = galleryImages.map(async (image) => {
-        const galleryImage = await fileUploadOnCloudinary(image.path);
+    // If gallery images are provided, update them
 
-        gallery.push({
-          url: galleryImage?.secure_url,
-          public_id: galleryImage?.public_id,
-        });
-      });
-      await Promise.all(uploadPromises);
+    const savedGalleryImages = await uploadGalleryImages(
+      galleryImages,
+      existingDoctor.gallery
+    );
+    if (!savedGalleryImages) {
+      throw new ApiError(
+        httpStatus.BAD_REQUEST,
+        "gallery images  uploaded field!"
+      );
     }
 
-    payload.id = id;
-
-    payload.avatar = profileImage;
-    payload.gallery = gallery;
-
-    const doctor = await Doctor.findOneAndUpdate({ id: id }, payload, {
-      new: true,
+    existingDoctor.set({
+      ...payload,
+      avatar: {
+        url: existingDoctor.avatar.url,
+        public_id: existingDoctor.avatar.public_id,
+      },
+      gallery: savedGalleryImages,
     });
-
-    return doctor;
+    const updatedDoctor = await existingDoctor.save();
+    return updatedDoctor;
   } catch (error) {
     if (avatar) {
       fs.unlinkSync(avatar);
@@ -169,9 +75,10 @@ const updateDoctor = async (
         fs.unlinkSync(image.path);
       });
     }
-    errorLogger.error("Error creating doctor profile:", error);
+    errorLogger.error("Error updating doctor profile:", error);
   }
 };
+
 const getAllDoctor = async (
   options: IPaginationOptions,
   filter: IFilterableFields
@@ -222,33 +129,28 @@ const getAllDoctor = async (
   };
 };
 
-const getSingleDoctor = async (payload: string) => {
-  const doctor = await Doctor.findOne({
-    $or: [{ email: payload }, { id: payload }],
-  }).populate({
+const getSingleDoctor = async (doctorId: string) => {
+  console.log(doctorId);
+  const doctor = await Doctor.findById(doctorId).populate({
     path: "userId",
   });
+  if (!doctor) {
+    throw new ApiError(httpStatus.NOT_FOUND, "Doctor not exit !");
+  }
   return doctor;
 };
 const deleteDoctor = async (id: string) => {
   try {
-    const isExit = await Doctor.findOne({ id: id });
+    const exitDoctor = await Doctor.findById({ _id: id });
 
-    if (!isExit) {
+    if (!exitDoctor) {
       throw new ApiError(httpStatus.NOT_FOUND, "doctor not found!");
     }
     // delete
-    if (isExit.avatar.public_id) {
-      await deleteImageOnCloudinary(isExit.avatar.public_id);
-    }
-    if (isExit.gallery.length > 0) {
-      const deletedPromise = isExit.gallery.map(async (image) => {
-        await deleteImageOnCloudinary(image?.public_id);
-      });
-      await Promise.all(deletedPromise);
-    }
+    await deleteAvatar(exitDoctor?.avatar.public_id);
+    await deleteGalleryImages(exitDoctor.gallery);
 
-    const doctor = await Doctor.deleteOne({ id });
+    const doctor = await Doctor.deleteOne({ _id: id });
 
     // Check if the deletion was acknowledged
     if (doctor.deletedCount === 0 && doctor.acknowledged) {
@@ -268,7 +170,6 @@ const deleteDoctor = async (id: string) => {
   }
 };
 export const DoctorService = {
-  createDoctor,
   getAllDoctor,
   updateDoctor,
   getSingleDoctor,

@@ -1,7 +1,10 @@
 import { Patient } from "./model";
 
 const findLastPatientId = async () => {
-  const currentId = await Patient.findOne({}, { id: 1, _id: 0 })
+  const currentId = await Patient.findOne(
+    { role: "patient" },
+    { id: 1, _id: 0 }
+  )
     .sort({
       createdAt: -1,
     })

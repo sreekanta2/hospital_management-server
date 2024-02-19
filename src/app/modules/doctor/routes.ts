@@ -5,21 +5,21 @@ import { DoctorController } from "./controller";
 const router = express.Router();
 
 router.route("/").get(DoctorController.getAllDoctor);
-router.route("/create-profile").post(
-  verifyJwt,
-  upload.fields([
-    {
-      name: "avatar",
-      maxCount: 1,
-    },
-    {
-      name: "gallery",
-      maxCount: 4,
-    },
-  ]),
-  // zodRequestValidationHandler(DoctorZodValidation.createDoctorZodSchema),
-  DoctorController.createDoctor
-);
+// router.route("/create-profile").post(
+//   verifyJwt,
+//   upload.fields([
+//     {
+//       name: "avatar",
+//       maxCount: 1,
+//     },
+//     {
+//       name: "gallery",
+//       maxCount: 4,
+//     },
+//   ]),
+//   // zodRequestValidationHandler(DoctorZodValidation.createDoctorZodSchema),
+//   DoctorController.createDoctor
+// );
 router.route("/update/:id").patch(
   verifyJwt,
   upload.fields([

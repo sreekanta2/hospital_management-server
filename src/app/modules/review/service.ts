@@ -1,41 +1,61 @@
 import httpStatus from "http-status";
+import { errorLogger } from "../../../shared/logger";
 import ApiError from "../../../utils/ApiError";
 import { IReview } from "./interface";
 import { Review } from "./model";
 
 const createReview = async (payload: IReview): Promise<IReview> => {
-  const review = await Review.create(payload);
-  const createReview = await Review.findById(review._id);
-  if (!createReview) {
-    throw new ApiError(httpStatus.BAD_REQUEST, "Review create field!");
+  try {
+    const review = await Review.create(payload);
+    const createReview = await Review.findById(review._id);
+    if (!createReview) {
+      throw new ApiError(httpStatus.BAD_REQUEST, "Review create field!");
+    }
+    return createReview;
+  } catch (error) {
+    errorLogger.error(error);
+    throw new Error(`${error}`);
   }
-  return createReview;
 };
 const updateReview = async (id: string, payload: IReview): Promise<IReview> => {
-  const updatedReview = await Review.findOneAndUpdate({ _id: id }, payload, {
-    new: true,
-  });
-  if (!updatedReview) {
-    throw new ApiError(httpStatus.BAD_REQUEST, "Review updated field!");
+  try {
+    const updatedReview = await Review.findOneAndUpdate({ _id: id }, payload, {
+      new: true,
+    });
+    if (!updatedReview) {
+      throw new ApiError(httpStatus.BAD_REQUEST, "Review updated field!");
+    }
+    return updatedReview;
+  } catch (error) {
+    errorLogger.error(error);
+    throw new Error(`${error}`);
   }
-  return updatedReview;
 };
 const getSingeReview = async (id: string): Promise<IReview> => {
-  const singleReview = await Review.findById({ _id: id });
-  if (!singleReview) {
-    throw new ApiError(httpStatus.BAD_REQUEST, " retrieve Review field!");
+  try {
+    const singleReview = await Review.findById({ _id: id });
+    if (!singleReview) {
+      throw new ApiError(httpStatus.BAD_REQUEST, " retrieve Review field!");
+    }
+    return singleReview;
+  } catch (error) {
+    errorLogger.error(error);
+    throw new Error(`${error}`);
   }
-  return singleReview;
 };
 
 const deleteReview = async (id: string) => {
-  const review = await Review.deleteOne({ _id: id });
+  try {
+    const review = await Review.deleteOne({ _id: id });
 
-  if (review?.deletedCount === 0 && review?.acknowledged) {
-    throw new Error("Failed to delete review");
+    if (review?.deletedCount === 0 && review?.acknowledged) {
+      throw new Error("Failed to delete review");
+    }
+    return review;
+  } catch (error) {
+    errorLogger.error(error);
+    throw new Error(`${error}`);
   }
-
-  return review;
 };
 export const ReviewService = {
   createReview,

@@ -1,7 +1,7 @@
 import { IGallery } from "../app/modules/doctor/interface";
 import { fileUploadOnCloudinary } from "./cloudinary";
 
-export const uploadGalleryImages = async (
+export const multipleFilesUpload = async (
   galleryImages: Express.Multer.File[]
 ) => {
   const gallery: IGallery[] = [];

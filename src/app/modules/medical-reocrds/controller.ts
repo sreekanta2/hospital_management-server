@@ -2,12 +2,14 @@ import { RequestHandler } from "express";
 import httpStatus from "http-status";
 import { sendResponse } from "../../../shared/sendResponse";
 import { asyncHandler } from "../../../utils/asyncHandler";
-import { MedicalRecordService } from "./servece";
+import { MedicalRecordService } from "./service";
 
 const createMedicalRecord: RequestHandler = asyncHandler(async (req, res) => {
   const data = req.body;
   const doc = req.file?.path;
+  const user = req.user;
   const medicalRecords = await MedicalRecordService.createMedicalRecord(
+    user,
     data,
     doc
   );
@@ -53,8 +55,19 @@ const getPatientAllMedicalRecords: RequestHandler = asyncHandler(
     });
   }
 );
+const deleteMedicalRecord: RequestHandler = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const medicalRecord = await MedicalRecordService.deleteMedicalRecord(id);
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Delete medical records  successfully",
+    data: medicalRecord || null,
+  });
+});
 export const MedicalRecordController = {
   createMedicalRecord,
   updateMedicalRecord,
   getPatientAllMedicalRecords,
+  deleteMedicalRecord,
 };

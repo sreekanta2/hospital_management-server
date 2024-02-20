@@ -10,14 +10,14 @@ cloudinary.config({
   api_secret: "UMJiS7NbvZw6PYgin4qF4_hkgc8",
 });
 
-export async function deleteAvatar(avatarId: string) {
+export async function singleFileDelete(avatarId: string) {
   if (avatarId) {
     const response = await cloudinary.uploader.destroy(avatarId);
     return response;
   }
 }
 
-export async function deleteGalleryImages(savedImages: any) {
+export async function multipleFilesDelete(savedImages: any) {
   const response = await Promise.all(
     savedImages?.map(async (image: { public_id: string }) => {
       await cloudinary.uploader.destroy(image?.public_id);
@@ -26,18 +26,8 @@ export async function deleteGalleryImages(savedImages: any) {
   return response;
 }
 
-export async function avatarUploaded(
-  newImagePath: string,
-  oldPublicId: string
-) {
+export async function singleFileUploaded(newImagePath: string) {
   try {
-    if (oldPublicId) {
-      const response = await cloudinary.uploader.upload(newImagePath);
-
-      await deleteAvatar(oldPublicId);
-      fs.unlinkSync(newImagePath);
-      return response;
-    }
     if (newImagePath) {
       const response = await cloudinary.uploader.upload(newImagePath, {
         resource_type: "auto",
@@ -50,52 +40,70 @@ export async function avatarUploaded(
     errorLogger.error(error);
   }
 }
+export async function singleFileUpdated(
+  newImagePath: string,
+  oldPublicId: string
+) {
+  console.log(newImagePath, oldPublicId);
+  if (oldPublicId) {
+    const response = await cloudinary.uploader.upload(newImagePath);
 
-export async function uploadGalleryImages(
+    await singleFileDelete(oldPublicId);
+    fs.unlinkSync(newImagePath);
+    return response;
+  }
+}
+export async function multipleFilesUpload(images: Express.Multer.File[]) {
+  try {
+    const gallery: IGallery[] = [];
+    await Promise.all(
+      images.map(async (image) => {
+        const galleryImage = await cloudinary.uploader.upload(image.path, {
+          resource_type: "auto",
+        });
+
+        gallery.push({
+          url: galleryImage?.secure_url,
+          public_id: galleryImage?.public_id,
+        });
+        fs.unlinkSync(image.path);
+      })
+    );
+    return gallery;
+  } catch (error) {
+    console.error(error);
+    if (images) {
+      images.forEach((image) => {
+        fs.unlinkSync(image.path);
+      });
+    }
+  }
+}
+export async function multipleFilesUpdate(
   images: Express.Multer.File[],
-  savedImages: any
+  savedImages: IGallery[]
 ) {
   try {
-    if (Array.isArray(savedImages) && savedImages.length > 0) {
-      const gallery: IGallery[] = [];
+    const gallery: IGallery[] = [];
 
-      // Upload new images
-      await Promise.all(
-        images.map(async (image) => {
-          const galleryImage = await cloudinary.uploader.upload(image.path, {
-            resource_type: "auto",
-          });
+    await Promise.all(
+      images.map(async (image) => {
+        const galleryImage = await cloudinary.uploader.upload(image.path, {
+          resource_type: "auto",
+        });
 
-          gallery.push({
-            url: galleryImage?.secure_url,
-            public_id: galleryImage?.public_id,
-          });
-          fs.unlinkSync(image.path);
-        })
-      );
+        gallery.push({
+          url: galleryImage?.secure_url,
+          public_id: galleryImage?.public_id,
+        });
+        fs.unlinkSync(image.path);
+      })
+    );
 
-      // Delete existing images
-      await deleteGalleryImages(savedImages);
+    // Delete existing images
+    await multipleFilesDelete(savedImages);
 
-      return gallery;
-    } else {
-      // If no existing images, simply upload the new ones
-      const gallery: IGallery[] = [];
-      await Promise.all(
-        images.map(async (image) => {
-          const galleryImage = await cloudinary.uploader.upload(image.path, {
-            resource_type: "auto",
-          });
-
-          gallery.push({
-            url: galleryImage?.secure_url,
-            public_id: galleryImage?.public_id,
-          });
-          fs.unlinkSync(image.path);
-        })
-      );
-      return gallery;
-    }
+    return gallery;
   } catch (error) {
     console.error(error);
     if (images) {

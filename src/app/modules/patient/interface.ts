@@ -8,9 +8,9 @@ export interface IPatient {
   phoneNumber: string;
   gender: "Male" | "Female" | "Other";
   dateOfBirth: string;
-  avatar: {
-    url: string | undefined;
-    public_id: string | undefined;
+  avatar?: {
+    url: string;
+    public_id: string;
   };
   bloodGroup:
     | "A+"

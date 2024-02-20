@@ -39,8 +39,8 @@ export const patientSchema = new mongoose.Schema(
       type: String,
     },
     avatar: {
-      url: { type: String || undefined },
-      public_id: { type: String || undefined },
+      url: { type: String },
+      public_id: { type: String },
     },
     bloodGroup: {
       type: String,

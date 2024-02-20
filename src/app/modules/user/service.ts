@@ -36,7 +36,7 @@ const doctorRegister = async (payload: IUser): Promise<IUser> => {
     await session.commitTransaction();
     await session.endSession();
   } catch (error) {
-    console.log(error);
+    throw new ApiError(httpStatus.BAD_REQUEST, `${error}`);
   }
   if (newUserAllData) {
     newUserAllData = await User.findOne({

@@ -2,7 +2,6 @@ import { RequestHandler } from "express";
 import httpStatus from "http-status";
 import { searchableFields } from "../../../constant";
 import { sendResponse } from "../../../shared/sendResponse";
-import ApiError from "../../../utils/ApiError";
 import { asyncHandler } from "../../../utils/asyncHandler";
 import pick from "../../../utils/pick";
 import { PatientService } from "./service";
@@ -20,26 +19,7 @@ const getAllPatient: RequestHandler = asyncHandler(async (req, res) => {
     data: patient,
   });
 });
-const createPatient: RequestHandler = asyncHandler(async (req, res) => {
-  const avatar = req.file?.path;
-  const data = req.body;
-  const loggedInUser = req.user;
 
-  if (!loggedInUser) {
-    throw new ApiError(httpStatus.UNAUTHORIZED, "User UNAUTHORIZED ");
-  }
-  const patient = await PatientService.createPatient(
-    avatar,
-    loggedInUser,
-    data
-  );
-  sendResponse(res, {
-    statusCode: httpStatus.OK,
-    success: true,
-    message: " Patient  profile crated successfully",
-    data: patient || null,
-  });
-});
 const updatePatient: RequestHandler = asyncHandler(async (req, res) => {
   const avatar = req.file?.path;
 
@@ -76,7 +56,6 @@ const deletePatient: RequestHandler = asyncHandler(async (req, res) => {
   });
 });
 export const PatientController = {
-  createPatient,
   getAllPatient,
   updatePatient,
   getSinglePatient,

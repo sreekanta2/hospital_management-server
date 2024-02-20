@@ -9,10 +9,12 @@ import {
 import { errorLogger } from "../../../shared/logger";
 import ApiError from "../../../utils/ApiError";
 import {
-  avatarUploaded,
-  deleteAvatar,
-  deleteGalleryImages,
-  uploadGalleryImages,
+  multipleFilesDelete,
+  multipleFilesUpdate,
+  multipleFilesUpload,
+  singleFileDelete,
+  singleFileUpdated,
+  singleFileUploaded,
 } from "../../../utils/cloudinary";
 import { paginationCalculator } from "../../../utils/paginationHelper";
 import { IDoctor } from "./interface";
@@ -31,29 +33,53 @@ const updateDoctor = async (
       throw new ApiError(httpStatus.NOT_FOUND, "Doctor not found!");
     }
 
-    const savedAvatar = await avatarUploaded(
-      avatar,
-      existingDoctor.avatar.public_id
-    );
-    if (!savedAvatar) {
-      throw new ApiError(httpStatus.BAD_REQUEST, "avatar  uploaded field!");
-    }
-    existingDoctor.avatar = {
-      url: savedAvatar.secure_url,
-      public_id: savedAvatar.public_id,
-    };
-
-    // If gallery images are provided, update them
-
-    const savedGalleryImages = await uploadGalleryImages(
-      galleryImages,
-      existingDoctor.gallery
-    );
-    if (!savedGalleryImages) {
-      throw new ApiError(
-        httpStatus.BAD_REQUEST,
-        "gallery images  uploaded field!"
+    if (avatar && existingDoctor.avatar.public_id) {
+      const savedAvatar = await singleFileUpdated(
+        avatar,
+        existingDoctor.avatar.public_id
       );
+
+      if (!savedAvatar) {
+        throw new ApiError(httpStatus.BAD_REQUEST, "avatar  update  field!");
+      }
+      existingDoctor.avatar = {
+        url: savedAvatar?.secure_url,
+        public_id: savedAvatar.public_id,
+      };
+    } else {
+      const savedAvatar = await singleFileUploaded(avatar);
+      if (!savedAvatar) {
+        throw new ApiError(httpStatus.BAD_REQUEST, "avatar  uploaded field!");
+      }
+      existingDoctor.avatar = {
+        url: savedAvatar?.secure_url,
+        public_id: savedAvatar.public_id,
+      };
+    }
+    let savedGalleryImages;
+    if (
+      Array.isArray(existingDoctor.gallery) &&
+      existingDoctor.gallery.length > 0 &&
+      galleryImages.length > 0
+    ) {
+      savedGalleryImages = await multipleFilesUpdate(
+        galleryImages,
+        existingDoctor.gallery
+      );
+      if (!savedGalleryImages) {
+        throw new ApiError(
+          httpStatus.BAD_REQUEST,
+          "gallery images  updated field!"
+        );
+      }
+    } else {
+      savedGalleryImages = await multipleFilesUpload(galleryImages);
+      if (!savedGalleryImages) {
+        throw new ApiError(
+          httpStatus.BAD_REQUEST,
+          "gallery images  uploaded field!"
+        );
+      }
     }
 
     existingDoctor.set({
@@ -75,7 +101,9 @@ const updateDoctor = async (
         fs.unlinkSync(image.path);
       });
     }
-    errorLogger.error("Error updating doctor profile:", error);
+
+    errorLogger.error(error);
+    throw new Error(`${error}`);
   }
 };
 
@@ -113,31 +141,46 @@ const getAllDoctor = async (
   }
 
   const whereCondition = andCondition.length > 0 ? { $and: andCondition } : {};
-  const doctors = await Doctor.find(whereCondition)
-    .sort()
-    .skip(skip)
-    .limit(limit);
-  const total = await Doctor.countDocuments();
+  try {
+    const doctors = await Doctor.find(whereCondition)
+      .sort()
+      .skip(skip)
+      .limit(limit);
+    const total = await Doctor.countDocuments();
 
-  return {
-    meta: {
-      page,
-      limit,
-      total,
-    },
-    data: doctors,
-  };
+    if (doctors) {
+      throw new ApiError(
+        httpStatus.BAD_REQUEST,
+        "something went wrong of doctor find doctor "
+      );
+    }
+    return {
+      meta: {
+        page,
+        limit,
+        total,
+      },
+      data: doctors,
+    };
+  } catch (error) {
+    errorLogger.error(error);
+    throw new Error(`${error}`);
+  }
 };
 
 const getSingleDoctor = async (doctorId: string) => {
-  console.log(doctorId);
-  const doctor = await Doctor.findById(doctorId).populate({
-    path: "userId",
-  });
-  if (!doctor) {
-    throw new ApiError(httpStatus.NOT_FOUND, "Doctor not exit !");
+  try {
+    const doctor = await Doctor.findById(doctorId).populate({
+      path: "userId",
+    });
+    if (!doctor) {
+      throw new ApiError(httpStatus.NOT_FOUND, "Doctor not exit !");
+    }
+    return doctor;
+  } catch (error) {
+    errorLogger.error(error);
+    throw new Error(`${error}`);
   }
-  return doctor;
 };
 const deleteDoctor = async (id: string) => {
   try {
@@ -147,8 +190,8 @@ const deleteDoctor = async (id: string) => {
       throw new ApiError(httpStatus.NOT_FOUND, "doctor not found!");
     }
     // delete
-    await deleteAvatar(exitDoctor?.avatar.public_id);
-    await deleteGalleryImages(exitDoctor.gallery);
+    await singleFileDelete(exitDoctor?.avatar.public_id);
+    await multipleFilesDelete(exitDoctor.gallery);
 
     const doctor = await Doctor.deleteOne({ _id: id });
 
@@ -163,10 +206,8 @@ const deleteDoctor = async (id: string) => {
       success: true,
     };
   } catch (error) {
-    console.log(error);
-    // If an error occurs during the transaction, catch it and abort the transaction
-
-    throw new ApiError(httpStatus.BAD_REQUEST, "Doctor and user delete field");
+    errorLogger.error(error);
+    throw new Error(`${error}`);
   }
 };
 export const DoctorService = {

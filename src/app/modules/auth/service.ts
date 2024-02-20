@@ -1,6 +1,7 @@
 import crypto from "crypto";
 import httpStatus from "http-status";
 import { JwtPayload } from "jsonwebtoken";
+import { errorLogger } from "../../../shared/logger";
 import ApiError from "../../../utils/ApiError";
 import { accessTokenAndRefreshTokenGenerate } from "../../../utils/generateAccessRefreshToken";
 import { sendEmail } from "../../../utils/sendMail";
@@ -10,20 +11,25 @@ import { IChangePassword, ILogin, ILoginResponse } from "./interface";
 const login = async (payload: ILogin): Promise<ILoginResponse> => {
   const { email, password } = payload;
 
-  const user = await User.findOne({ email });
+  try {
+    const user = await User.findOne({ email });
 
-  if (!user) {
-    throw new ApiError(httpStatus.NOT_FOUND, "User doesn't exit!!");
+    if (!user) {
+      throw new ApiError(httpStatus.NOT_FOUND, "User doesn't exit!!");
+    }
+    const isMatched = await user.checkPassword(password);
+    if (!isMatched) {
+      throw new ApiError(httpStatus.BAD_REQUEST, "Password incorrect");
+    }
+
+    const { accessToken, refreshToken } =
+      await accessTokenAndRefreshTokenGenerate(user.email);
+
+    return { accessToken, refreshToken };
+  } catch (error) {
+    errorLogger.error(error);
+    throw new Error(`${error}`);
   }
-  const isMatched = await user.checkPassword(password);
-  if (!isMatched) {
-    throw new ApiError(httpStatus.BAD_REQUEST, "Password incorrect");
-  }
-
-  const { accessToken, refreshToken } =
-    await accessTokenAndRefreshTokenGenerate(user.email);
-
-  return { accessToken, refreshToken };
 };
 const logout = async (payload: JwtPayload) => {
   try {
@@ -40,10 +46,8 @@ const logout = async (payload: JwtPayload) => {
     );
     return result;
   } catch (error) {
-    throw new ApiError(
-      httpStatus.UNAUTHORIZED,
-      "some thing went wrong tray again!"
-    );
+    errorLogger.error(error);
+    throw new Error(`${error}`);
   }
 };
 const changePassword = async (
@@ -56,22 +60,27 @@ const changePassword = async (
     throw new Error("old and new password are same!");
   }
 
-  const user = await User.findOne({
-    $or: [{ email: payload }, { id: payload }],
-  });
+  try {
+    const user = await User.findOne({
+      $or: [{ email: payload }, { id: payload }],
+    });
 
-  if (!user) {
-    throw new ApiError(httpStatus.NOT_FOUND, "User doesn't exit!!");
+    if (!user) {
+      throw new ApiError(httpStatus.NOT_FOUND, "User doesn't exit!!");
+    }
+
+    const verifiedUser = await user.checkPassword(oldPassword);
+    if (!verifiedUser) {
+      throw new ApiError(httpStatus.BAD_REQUEST, "old password incorrect!!");
+    }
+    user.password = newPassword;
+    user.save();
+
+    return true;
+  } catch (error) {
+    errorLogger.error(error);
+    throw new Error(`${error}`);
   }
-
-  const verifiedUser = await user.checkPassword(oldPassword);
-  if (!verifiedUser) {
-    throw new ApiError(httpStatus.BAD_REQUEST, "old password incorrect!!");
-  }
-  user.password = newPassword;
-  user.save();
-
-  return true;
 };
 
 const forgatPassword = async (resetUrl: string, email: string) => {
@@ -156,7 +165,8 @@ const forgatPassword = async (resetUrl: string, email: string) => {
     user.passwordResetToken = "";
     user.passwordResetTokenExpire = "";
     user.save();
-    throw new ApiError(httpStatus.BAD_REQUEST, "send email faild");
+    errorLogger.error(error);
+    throw new Error(`${error}`);
   }
 };
 
@@ -168,21 +178,26 @@ const resetPassword = async (
   if (!(password === confirmPassword)) {
     throw new Error("password and confirm password not match !!");
   }
-  const verifyToken = crypto.createHash("sha256").update(token).digest("hex");
-  const user = await User.findOne({
-    passwordResetToken: verifyToken,
-  });
-  if (!user) {
-    throw new ApiError(
-      httpStatus.BAD_REQUEST,
-      "invaild token and  expire your reset password link"
-    );
-  }
-  user.password = password;
+  try {
+    const verifyToken = crypto.createHash("sha256").update(token).digest("hex");
+    const user = await User.findOne({
+      passwordResetToken: verifyToken,
+    });
+    if (!user) {
+      throw new ApiError(
+        httpStatus.BAD_REQUEST,
+        "invaild token and  expire your reset password link"
+      );
+    }
+    user.password = password;
 
-  user.passwordResetToken = "";
-  user.passwordResetTokenExpire = "";
-  user.save();
+    user.passwordResetToken = "";
+    user.passwordResetTokenExpire = "";
+    user.save();
+  } catch (error) {
+    errorLogger.error(error);
+    throw new Error(`${error}`);
+  }
 };
 
 export const AuthService = {

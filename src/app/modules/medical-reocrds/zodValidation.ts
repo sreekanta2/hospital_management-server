@@ -1,9 +1,12 @@
 import { z } from "zod";
 const medicalRecordZodSchema = z.object({
   body: z.object({
-    patient: z.string().refine((value) => value.match(/^[0-9a-fA-F]{24}$/), {
-      message: "Invalid ObjectId for patient",
-    }),
+    patient: z
+      .string()
+      .refine((value) => value.match(/^[0-9a-fA-F]{24}$/), {
+        message: "Invalid ObjectId for patient",
+      })
+      .optional(),
     doctor: z.string().refine((value) => value.match(/^[0-9a-fA-F]{24}$/), {
       message: "Invalid ObjectId for doctor",
     }),

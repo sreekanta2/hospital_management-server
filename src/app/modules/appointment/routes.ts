@@ -12,6 +12,7 @@ router.route("/create-appointment").post(
   zodRequestValidationHandler(AppointmentZodSchema.createAppointmentSchema),
   AppointmentController.createAppointment
 );
+router.route("/").get(verifyJwt, AppointmentController.getAllAppointment);
 router.route("/update/:id").patch(
   verifyJwt,
 
@@ -20,6 +21,5 @@ router.route("/update/:id").patch(
 );
 router.route("/:id").get(AppointmentController.getSingleAppointment);
 router.route("/:id").delete(AppointmentController.deleteAppointment);
-// router.route("/").get(DoctorController.getAllDoctor);
 
 export const AppointmentRoutes = router;

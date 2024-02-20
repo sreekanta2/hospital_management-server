@@ -5,8 +5,9 @@ import { asyncHandler } from "../../../utils/asyncHandler";
 import { AppointmentService } from "./service";
 
 const createAppointment: RequestHandler = asyncHandler(async (req, res) => {
+  const user = req.user;
   const data = req.body;
-  const appointment = await AppointmentService.createAppointment(data);
+  const appointment = await AppointmentService.createAppointment(user, data);
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
@@ -22,6 +23,18 @@ const updateAppointment: RequestHandler = asyncHandler(async (req, res) => {
     statusCode: httpStatus.OK,
     success: true,
     message: "Appointment updated  successfully",
+    data: appointment,
+  });
+});
+
+const getAllAppointment: RequestHandler = asyncHandler(async (req, res) => {
+  const user = req.user;
+  const option = req.query;
+  const appointment = await AppointmentService.getAllAppointment(user, option);
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Appointment retrieve  successfully",
     data: appointment,
   });
 });
@@ -48,6 +61,7 @@ const deleteAppointment: RequestHandler = asyncHandler(async (req, res) => {
 export const AppointmentController = {
   createAppointment,
   updateAppointment,
+  getAllAppointment,
   getSingleAppointment,
   deleteAppointment,
 };

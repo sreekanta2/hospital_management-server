@@ -1,7 +1,6 @@
 import fs from "fs";
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import httpStatus from "http-status";
-import { JwtPayload } from "jsonwebtoken";
 import { SortOrder } from "mongoose";
 import { searchableFields } from "../../../constant";
 import {
@@ -10,107 +9,69 @@ import {
 } from "../../../interfaces/common";
 import ApiError from "../../../utils/ApiError";
 import {
-  deleteImageOnCloudinary,
-  fileUploadOnCloudinary,
+  singleFileDelete,
+  singleFileUpdated,
+  singleFileUploaded,
 } from "../../../utils/cloudinary";
 import { paginationCalculator } from "../../../utils/paginationHelper";
-import { IUser } from "../user/interface";
 
 import { errorLogger } from "../../../shared/logger";
 import { IPatient } from "./interface";
 import { Patient } from "./model";
-import { generatePatientId } from "./patient.utils";
 
-const createPatient = async (
-  avatar: string | undefined,
-  loggedInUser: IUser | JwtPayload,
-  payload: IPatient
-) => {
-  try {
-    const id = await generatePatientId();
-    payload.id = id;
-    payload.email = loggedInUser.email;
-
-    const patient = await Patient.findOne({ email: loggedInUser.email });
-    if (patient) {
-      throw new ApiError(
-        httpStatus.NOT_FOUND,
-        "Patient already exists, please update your profile!"
-      );
-    }
-
-    // // cloudinary
-    if (avatar) {
-      const profile = await fileUploadOnCloudinary(avatar);
-      if (!profile) {
-        throw new ApiError(
-          httpStatus.BAD_REQUEST,
-          " profile thumb Failed uploaded!"
-        );
-      }
-      const profileImage = {
-        url: profile.secure_url,
-        public_id: profile.public_id,
-      };
-
-      payload.avatar = profileImage;
-    }
-
-    const newPatient = await Patient.create(payload);
-    const cratedPatient = Patient.findById(newPatient._id).populate({
-      path: "userId",
-    });
-    if (!createPatient) {
-      throw new ApiError(
-        httpStatus.BAD_REQUEST,
-        "Patient  field  his created profile!! "
-      );
-    }
-    return cratedPatient;
-  } catch (error) {
-    if (avatar) {
-      fs.unlinkSync(avatar);
-    }
-
-    errorLogger.error("Error creating patient profile:", error);
-  }
-};
 const updatePatient = async (
-  avatar: string | undefined,
+  avatarLocalPath: string | undefined,
   id: string,
   payload: IPatient
 ) => {
-  const isExit = await Patient.findOne({ id: id });
+  try {
+    const exitingPatient = await Patient.findById(id);
 
-  if (!isExit) {
-    throw new ApiError(httpStatus.NOT_FOUND, "patient not found!");
-  }
-
-  // cloudinary
-  if (avatar && isExit?.avatar) {
-    await deleteImageOnCloudinary(isExit.avatar.public_id);
-  }
-
-  if (avatar) {
-    const profile = await fileUploadOnCloudinary(avatar);
-    if (!profile) {
-      throw new ApiError(
-        httpStatus.BAD_REQUEST,
-        " profile thumb Failed uploaded!"
-      );
+    if (!exitingPatient) {
+      throw new ApiError(httpStatus.NOT_FOUND, "patient not found!");
     }
-    const profileImage = {
-      url: profile.secure_url,
-      public_id: profile.public_id,
-    };
-    payload.avatar = profileImage;
+
+    // cloudinary
+
+    if (avatarLocalPath && exitingPatient.avatar?.public_id) {
+      const savedAvatar = await singleFileUpdated(
+        avatarLocalPath,
+        exitingPatient.avatar.public_id
+      );
+
+      if (!savedAvatar) {
+        throw new ApiError(httpStatus.BAD_REQUEST, "avatar  update  field!");
+      }
+      exitingPatient.avatar = {
+        url: savedAvatar?.secure_url,
+        public_id: savedAvatar.public_id,
+      };
+    } else if (avatarLocalPath) {
+      const savedAvatar = await singleFileUploaded(avatarLocalPath);
+      if (!savedAvatar) {
+        throw new ApiError(httpStatus.BAD_REQUEST, "avatar  uploaded field!");
+      }
+      exitingPatient.avatar = {
+        url: savedAvatar?.secure_url,
+        public_id: savedAvatar.public_id,
+      };
+    }
+    exitingPatient.set({
+      ...payload,
+      avatar: {
+        url: exitingPatient?.avatar?.url,
+        public_id: exitingPatient?.avatar?.public_id,
+      },
+    });
+    const updatePatient = await exitingPatient.save();
+    return updatePatient;
+  } catch (error) {
+    if (avatarLocalPath) {
+      fs.unlinkSync(avatarLocalPath);
+    }
+    errorLogger.error(error);
+    throw new Error(`${error}`);
   }
-
-  const patient = await Patient.findOneAndUpdate({ id: id }, payload, {
-    new: true,
-  });
-
-  return patient;
 };
 const getAllPatient = async (
   options: IPaginationOptions,
@@ -146,62 +107,74 @@ const getAllPatient = async (
   }
 
   const whereCondition = andCondition.length > 0 ? { $and: andCondition } : {};
-  const patients = await Patient.find(whereCondition)
-    .populate({
-      path: "userId",
-    })
-    .sort()
-    .skip(skip)
-    .limit(limit);
-  const total = await Patient.countDocuments();
+  try {
+    const patients = await Patient.find(whereCondition)
+      .populate({
+        path: "userId",
+      })
+      .sort()
+      .skip(skip)
+      .limit(limit);
+    const total = await Patient.countDocuments();
 
-  return {
-    meta: {
-      page,
-      limit,
-      total,
-    },
-    data: patients,
-  };
-};
-const getSinglePatient = async (payload: string) => {
-  const patient = await Patient.findOne({
-    $or: [{ email: payload }, { id: payload }],
-  }).populate({
-    path: "userId",
-  });
-  if (!patient) {
-    throw new ApiError(httpStatus.NOT_FOUND, "patient not exit!!");
+    return {
+      meta: {
+        page,
+        limit,
+        total,
+      },
+      data: patients,
+    };
+  } catch (error) {
+    errorLogger.error(error);
+    throw new Error(`${error}`);
   }
-  return patient;
+};
+const getSinglePatient = async (patientId: string) => {
+  try {
+    const patient = await Patient.findById(patientId).populate({
+      path: "userId",
+    });
+    if (!patient) {
+      throw new ApiError(httpStatus.NOT_FOUND, "patient not exit!!");
+    }
+    return patient;
+  } catch (error) {
+    errorLogger.error(error);
+    throw new Error(`${error}`);
+  }
 };
 const deletePatient = async (id: string) => {
-  const isExit = await Patient.findOne({ id: id });
+  try {
+    const isExit = await Patient.findOne({ id: id });
 
-  if (!isExit) {
-    throw new ApiError(httpStatus.NOT_FOUND, "Patient not found!");
+    if (!isExit) {
+      throw new ApiError(httpStatus.NOT_FOUND, "Patient not found!");
+    }
+    // delete
+    if (isExit?.avatar?.public_id) {
+      await singleFileDelete(isExit.avatar.public_id);
+    }
+
+    const patient = await Patient.deleteOne({ id });
+
+    // Check if the deletion was acknowledged
+    if (patient.deletedCount === 0 && patient.acknowledged) {
+      throw new Error("Failed to delete user");
+    }
+
+    return {
+      patient,
+      success: true,
+    };
+  } catch (error) {
+    errorLogger.error(error);
+    throw new Error(`${error}`);
   }
-  // delete
-  if (isExit?.avatar?.public_id) {
-    await deleteImageOnCloudinary(isExit.avatar.public_id);
-  }
-
-  const patient = await Patient.deleteOne({ id });
-
-  // Check if the deletion was acknowledged
-  if (patient.deletedCount === 0 && patient.acknowledged) {
-    throw new Error("Failed to delete user");
-  }
-
-  return {
-    patient,
-    success: true,
-  };
 };
 export const PatientService = {
   getAllPatient,
   updatePatient,
   getSinglePatient,
   deletePatient,
-  createPatient,
 };

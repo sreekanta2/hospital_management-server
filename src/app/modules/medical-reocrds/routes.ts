@@ -27,9 +27,6 @@ router
     MedicalRecordController.updateMedicalRecord
   );
 router.route("/:id").get(MedicalRecordController.getPatientAllMedicalRecords);
-
-// router.route("/").get(PatientController.getAllPatient);
-// router.route("/:id").delete(PatientController.deletePatient);
-// router.route("/:id").get(PatientController.getSinglePatient);
+router.route("/:id").delete(MedicalRecordController.deleteMedicalRecord);
 
 export const MedicalRecordRoutes = router;

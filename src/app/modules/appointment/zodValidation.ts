@@ -3,7 +3,6 @@ import { z } from "zod";
 const createAppointmentSchema = z.object({
   body: z.object({
     doctorId: z.string(),
-    patientId: z.string(),
     status: z.boolean(),
     confirmDate: z.string().optional(),
     amount: z.string().optional(),
@@ -11,8 +10,6 @@ const createAppointmentSchema = z.object({
 });
 const updateZodSchema = z.object({
   body: z.object({
-    doctorId: z.string().optional(),
-    patientId: z.string().optional(),
     status: z.boolean().optional(),
     confirmDate: z.string().optional(),
     amount: z.string().optional(),

@@ -10,7 +10,7 @@ cloudinary.config({
   api_secret: "UMJiS7NbvZw6PYgin4qF4_hkgc8",
 });
 
-export async function avatarUploaded(avatar: string, urlId: string) {
+export async function singleFileUploaded(avatar: string, urlId: string) {
   try {
     if (avatar && urlId) {
       await cloudinary.uploader.destroy(urlId);
@@ -26,7 +26,7 @@ export async function avatarUploaded(avatar: string, urlId: string) {
   }
 }
 
-export async function uploadGalleryImages(
+export async function multipleFilesUpload(
   images: Express.Multer.File[],
   savedImages: any
 ) {
@@ -59,13 +59,13 @@ export async function uploadGalleryImages(
     }
   }
 }
-export async function deleteAvatar(avatarId: string) {
+export async function singleFileDelete(avatarId: string) {
   if (avatarId) {
     const response = await cloudinary.uploader.destroy(avatarId);
     return response;
   }
 }
-export async function deleteGalleryImages(savedImages: any) {
+export async function multipleFilesDelete(savedImages: any) {
   const response = await Promise.all(
     savedImages.map(async (image: { public_id: string }) => {
       await cloudinary.uploader.destroy(image?.public_id);

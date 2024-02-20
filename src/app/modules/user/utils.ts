@@ -7,7 +7,7 @@ const findLastDoctorId = async () => {
       createdAt: -1,
     })
     .lean();
-  console.log(currentId);
+
   return currentId?.id ? currentId.id.substring(4) : null;
 };
 

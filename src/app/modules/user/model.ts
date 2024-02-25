@@ -13,6 +13,18 @@ const userSchema = new Schema<IUser, UserModel>(
       required: true,
       unique: true,
     },
+    firstName: {
+      type: String,
+      required: true,
+    },
+    lastName: {
+      type: String,
+      required: true,
+    },
+    avatar: {
+      url: { type: String },
+      public_id: { type: String },
+    },
     role: {
       type: String,
       required: true,

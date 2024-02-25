@@ -1,6 +1,7 @@
 import fs from "fs";
 import httpStatus from "http-status";
-import { SortOrder } from "mongoose";
+import { JwtPayload } from "jsonwebtoken";
+import mongoose, { SortOrder } from "mongoose";
 import { searchableFields } from "../../../constant";
 import {
   IFilterableFields,
@@ -8,91 +9,58 @@ import {
 } from "../../../interfaces/common";
 import { errorLogger } from "../../../shared/logger";
 import ApiError from "../../../utils/ApiError";
-import {
-  multipleFilesDelete,
-  multipleFilesUpdate,
-  multipleFilesUpload,
-  singleFileDelete,
-  singleFileUpdated,
-  singleFileUploaded,
-} from "../../../utils/cloudinary";
 import { paginationCalculator } from "../../../utils/paginationHelper";
+import { User } from "../user/model";
 import { IDoctor } from "./interface";
 import { Doctor } from "./model";
+import { updateAvatar, updateGalleryImages, updateUserData } from "./utils";
 
+// Main function to update user and doctor information
 const updateDoctor = async (
   avatar: string,
   galleryImages: Express.Multer.File[],
   payload: IDoctor,
-  id: string
+  id: string,
+  user: JwtPayload
 ) => {
+  const session = await mongoose.startSession();
+  session.startTransaction();
+
   try {
-    const existingDoctor = await Doctor.findById(id);
-
-    if (!existingDoctor) {
-      throw new ApiError(httpStatus.NOT_FOUND, "Doctor not found!");
+    const [existingUser, existingDoctor] = await Promise.all([
+      User.findOne({ email: user.email }),
+      Doctor.findById(id),
+    ]);
+    if (!existingDoctor || !existingUser) {
+      throw new ApiError(httpStatus.NOT_FOUND, "User and doctor not found!");
     }
 
-    if (avatar && existingDoctor.avatar.public_id) {
-      const savedAvatar = await singleFileUpdated(
-        avatar,
-        existingDoctor.avatar.public_id
-      );
-
-      if (!savedAvatar) {
-        throw new ApiError(httpStatus.BAD_REQUEST, "avatar  update  field!");
-      }
-      existingDoctor.avatar = {
-        url: savedAvatar?.secure_url,
-        public_id: savedAvatar.public_id,
-      };
-    } else {
-      const savedAvatar = await singleFileUploaded(avatar);
-      if (!savedAvatar) {
-        throw new ApiError(httpStatus.BAD_REQUEST, "avatar  uploaded field!");
-      }
-      existingDoctor.avatar = {
-        url: savedAvatar?.secure_url,
-        public_id: savedAvatar.public_id,
-      };
-    }
-    let savedGalleryImages;
-    if (
-      Array.isArray(existingDoctor.gallery) &&
-      existingDoctor.gallery.length > 0 &&
-      galleryImages.length > 0
-    ) {
-      savedGalleryImages = await multipleFilesUpdate(
-        galleryImages,
-        existingDoctor.gallery
-      );
-      if (!savedGalleryImages) {
-        throw new ApiError(
-          httpStatus.BAD_REQUEST,
-          "gallery images  updated field!"
-        );
-      }
-    } else {
-      savedGalleryImages = await multipleFilesUpload(galleryImages);
-      if (!savedGalleryImages) {
-        throw new ApiError(
-          httpStatus.BAD_REQUEST,
-          "gallery images  uploaded field!"
-        );
-      }
-    }
+    const [updatedUser, updatedGalleryImages, avatarImages] = await Promise.all(
+      [
+        updateUserData(payload, existingUser),
+        updateGalleryImages(galleryImages, existingDoctor),
+        updateAvatar(avatar, existingUser),
+      ]
+    );
 
     existingDoctor.set({
       ...payload,
       avatar: {
-        url: existingDoctor.avatar.url,
-        public_id: existingDoctor.avatar.public_id,
+        url: avatarImages.secure_url,
+        public_id: avatarImages.public_id,
       },
-      gallery: savedGalleryImages,
+      gallery: updatedGalleryImages,
     });
-    const updatedDoctor = await existingDoctor.save();
-    return updatedDoctor;
+
+    const updatedDoctorResult = await existingDoctor.save({ session });
+    await session.commitTransaction();
+    session.endSession();
+
+    return [updatedUser, updatedDoctorResult];
   } catch (error) {
+    await session.abortTransaction();
+    session.endSession();
+
     if (avatar) {
       fs.unlinkSync(avatar);
     }
@@ -103,7 +71,7 @@ const updateDoctor = async (
     }
 
     errorLogger.error(error);
-    throw new Error(`${error}`);
+    throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, `${error}`);
   }
 };
 
@@ -141,6 +109,7 @@ const getAllDoctor = async (
   }
 
   const whereCondition = andCondition.length > 0 ? { $and: andCondition } : {};
+
   try {
     const doctors = await Doctor.find(whereCondition)
       .sort()
@@ -148,7 +117,7 @@ const getAllDoctor = async (
       .limit(limit);
     const total = await Doctor.countDocuments();
 
-    if (doctors) {
+    if (!doctors) {
       throw new ApiError(
         httpStatus.BAD_REQUEST,
         "something went wrong of doctor find doctor "
@@ -168,51 +137,7 @@ const getAllDoctor = async (
   }
 };
 
-const getSingleDoctor = async (doctorId: string) => {
-  try {
-    const doctor = await Doctor.findById(doctorId).populate({
-      path: "userId",
-    });
-    if (!doctor) {
-      throw new ApiError(httpStatus.NOT_FOUND, "Doctor not exit !");
-    }
-    return doctor;
-  } catch (error) {
-    errorLogger.error(error);
-    throw new Error(`${error}`);
-  }
-};
-const deleteDoctor = async (id: string) => {
-  try {
-    const exitDoctor = await Doctor.findById({ _id: id });
-
-    if (!exitDoctor) {
-      throw new ApiError(httpStatus.NOT_FOUND, "doctor not found!");
-    }
-    // delete
-    await singleFileDelete(exitDoctor?.avatar.public_id);
-    await multipleFilesDelete(exitDoctor.gallery);
-
-    const doctor = await Doctor.deleteOne({ _id: id });
-
-    // Check if the deletion was acknowledged
-    if (doctor.deletedCount === 0 && doctor.acknowledged) {
-      throw new Error("Failed to delete user");
-    }
-
-    return {
-      doctor,
-
-      success: true,
-    };
-  } catch (error) {
-    errorLogger.error(error);
-    throw new Error(`${error}`);
-  }
-};
 export const DoctorService = {
   getAllDoctor,
   updateDoctor,
-  getSingleDoctor,
-  deleteDoctor,
 };

@@ -1,22 +1,12 @@
-import { Schema } from "mongoose";
-
 export interface IDoctor {
   gallery: { url: string | undefined; public_id: string | undefined }[];
   email: string;
   id: string;
-  userId: string;
-  username: string;
-  firstName: string;
-  lastName: string;
   rating: number;
   phoneNumber: string;
+  description: string;
   gender: "Male" | "Female" | "Other";
   dateOfBirth: string; // Assuming date is provided as a string for simplicity
-  avatar: {
-    url: string;
-    public_id: string;
-  };
-
   schedule: {
     day: string;
     hours: {
@@ -24,7 +14,7 @@ export interface IDoctor {
       end: string;
     }[];
   }[];
-  clinics: Array<Schema.Types.ObjectId>;
+
   contact: {
     address1: string;
     address2: string;

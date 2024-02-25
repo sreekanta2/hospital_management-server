@@ -1,6 +1,6 @@
 import { User } from "./model";
 
-// generate id
+// generate doctor  id
 const findLastDoctorId = async () => {
   const currentId = await User.findOne({ role: "doctor" }, { id: 1, _id: 0 })
     .sort({
@@ -19,7 +19,7 @@ export const generateDoctorId = async () => {
 
   return incrementalId;
 };
-
+//  generate doctor id
 const findLastPatientId = async () => {
   const currentId = await User.findOne({ role: "patient" }, { id: 1, _id: 0 })
     .sort({

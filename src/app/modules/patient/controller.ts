@@ -25,8 +25,8 @@ const updatePatient: RequestHandler = asyncHandler(async (req, res) => {
 
   const data = req.body;
   const { id } = req.params;
-
-  const patient = await PatientService.updatePatient(avatar, id, data);
+  const user = req.user;
+  const patient = await PatientService.updatePatient(avatar, id, data, user);
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
@@ -34,30 +34,8 @@ const updatePatient: RequestHandler = asyncHandler(async (req, res) => {
     data: patient || null,
   });
 });
-const getSinglePatient: RequestHandler = asyncHandler(async (req, res) => {
-  const { id } = req.params;
 
-  const patient = await PatientService.getSinglePatient(id);
-  sendResponse(res, {
-    statusCode: httpStatus.OK,
-    success: true,
-    message: "  get single user User  successfully",
-    data: patient || null,
-  });
-});
-const deletePatient: RequestHandler = asyncHandler(async (req, res) => {
-  const { id } = req.params;
-  const patient = await PatientService.deletePatient(id);
-  sendResponse(res, {
-    statusCode: httpStatus.OK,
-    success: true,
-    message: "  Patient delete  successfully",
-    data: patient,
-  });
-});
 export const PatientController = {
   getAllPatient,
   updatePatient,
-  getSinglePatient,
-  deletePatient,
 };

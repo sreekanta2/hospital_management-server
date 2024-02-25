@@ -13,6 +13,7 @@ const createAppointment = async (
   payload: IAppointment
 ): Promise<IAppointment> => {
   payload.patientId = user._id;
+
   try {
     const updatedAppointment = await Appointment.create(payload);
     const appointment = await Appointment.findById(updatedAppointment._id);

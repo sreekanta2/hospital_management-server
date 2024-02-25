@@ -31,6 +31,7 @@ const updateReview = async (id: string, payload: IReview): Promise<IReview> => {
     throw new Error(`${error}`);
   }
 };
+
 const getSingeReview = async (id: string): Promise<IReview> => {
   try {
     const singleReview = await Review.findById({ _id: id });

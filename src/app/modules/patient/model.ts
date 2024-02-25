@@ -1,13 +1,9 @@
-import mongoose, { Schema } from "mongoose";
+import mongoose from "mongoose";
 import { bloodGroup, gender } from "./constant";
 import { IPatient } from "./interface";
 
 export const patientSchema = new mongoose.Schema(
   {
-    userId: {
-      type: Schema.Types.ObjectId,
-      ref: "User",
-    },
     email: {
       type: String,
       required: true,
@@ -16,6 +12,7 @@ export const patientSchema = new mongoose.Schema(
     id: {
       type: String,
       unique: true,
+      ref: "User",
       required: true,
     },
     username: {

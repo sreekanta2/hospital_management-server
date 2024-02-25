@@ -44,7 +44,6 @@ export async function singleFileUpdated(
   newImagePath: string,
   oldPublicId: string
 ) {
-  console.log(newImagePath, oldPublicId);
   if (oldPublicId) {
     const response = await cloudinary.uploader.upload(newImagePath);
 

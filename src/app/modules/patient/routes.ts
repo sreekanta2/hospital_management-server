@@ -16,7 +16,5 @@ router.route("/update/:id").patch(
 
   PatientController.updatePatient
 );
-router.route("/:id").delete(PatientController.deletePatient);
-router.route("/:id").get(PatientController.getSinglePatient);
 
 export const PatientRoutes = router;

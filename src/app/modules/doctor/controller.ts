@@ -13,14 +13,15 @@ const updateDoctor: RequestHandler = asyncHandler(async (req, res) => {
   const avatar = req.files["avatar"] as Express.Multer.File[];
   const gallery = req.files["gallery"] as Express.Multer.File[];
   const data = req.body;
-
+  const user = req.user;
   const { id } = req.params;
 
   const doctor = await DoctorService.updateDoctor(
     avatar[0].path,
     gallery,
     data,
-    id
+    id,
+    user
   );
   sendResponse(res, {
     statusCode: httpStatus.OK,
@@ -43,30 +44,7 @@ const getAllDoctor: RequestHandler = asyncHandler(async (req, res) => {
   });
 });
 
-const getSingleDoctor: RequestHandler = asyncHandler(async (req, res) => {
-  const { id } = req.params;
-
-  const doctor = await DoctorService.getSingleDoctor(id);
-  sendResponse(res, {
-    statusCode: httpStatus.OK,
-    success: true,
-    message: "  get single user User  successfully",
-    data: doctor,
-  });
-});
-const deleteDoctor: RequestHandler = asyncHandler(async (req, res) => {
-  const { id } = req.params;
-  const doctor = await DoctorService.deleteDoctor(id);
-  sendResponse(res, {
-    statusCode: httpStatus.OK,
-    success: true,
-    message: "doctor delete  successfully",
-    data: doctor,
-  });
-});
 export const DoctorController = {
   getAllDoctor,
   updateDoctor,
-  getSingleDoctor,
-  deleteDoctor,
 };
